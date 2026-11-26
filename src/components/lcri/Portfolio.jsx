@@ -12,7 +12,7 @@ import {
 } from "@/lib/lcri";
 
 export default function Portfolio() {
-  const { systems, loading, reload } = useData();
+  const { systems, loading, reload, teamId } = useData();
   const navigate = useNavigate();
   const [filter, setFilter] = useState("all");
   const [adding, setAdding] = useState(false);
@@ -25,7 +25,7 @@ export default function Portfolio() {
   const hasExamples = list.some((s) => s.is_example);
 
   const addSystem = async (data) => {
-    const created = await base44.entities.WaterSystem.create(data);
+    const created = await base44.entities.WaterSystem.create({ ...data, team_id: teamId });
     setAdding(false);
     await reload();
     notify(`${data.name} added`);
@@ -37,8 +37,8 @@ export default function Portfolio() {
     try {
       for (const ex of EXAMPLE_SYSTEMS) {
         const { key: _key, ...data } = ex;
-        const created = await base44.entities.WaterSystem.create({ ...data, is_example: true });
-        await base44.entities.ServiceLine.bulkCreate(exampleLines(ex, created.id));
+        const created = await base44.entities.WaterSystem.create({ ...data, is_example: true, team_id: teamId });
+        await base44.entities.ServiceLine.bulkCreate(exampleLines(ex, created.id).map((l) => ({ ...l, team_id: teamId })));
       }
       await reload();
       notify(`${EXAMPLE_SYSTEMS.length} example systems added`);

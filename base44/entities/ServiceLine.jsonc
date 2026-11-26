@@ -1,8 +1,17 @@
 {
   "name": "ServiceLine",
   "type": "object",
-  "description": "One customer service line in a WaterSystem, with its material and how it was identified.",
+  "description": "One customer service line in a WaterSystem, with its material and how it was identified. Shared with the owner's team; personal (team_id null) records are private to their creator.",
   "properties": {
+    "team_id": {
+      "type": "string",
+      "title": "Team ID",
+      "description": "Team that owns this record. Null for a personal record, visible only to its creator. Set on create; only server functions move records between teams.",
+      "rls": {
+        "create": true,
+        "update": false
+      }
+    },
     "system_id": {
       "type": "string",
       "title": "Water System ID"
@@ -48,14 +57,102 @@
     "address"
   ],
   "rls": {
+    "create": {
+      "$or": [
+        {
+          "$and": [
+            {
+              "data.team_id": "{{user.data.team_id}}"
+            },
+            {
+              "data.team_id": {
+                "$ne": null
+              }
+            }
+          ]
+        },
+        {
+          "data.team_id": null
+        }
+      ]
+    },
     "read": {
-      "created_by_id": "{{user.id}}"
+      "$or": [
+        {
+          "$and": [
+            {
+              "data.team_id": "{{user.data.team_id}}"
+            },
+            {
+              "data.team_id": {
+                "$ne": null
+              }
+            }
+          ]
+        },
+        {
+          "$and": [
+            {
+              "created_by_id": "{{user.id}}"
+            },
+            {
+              "data.team_id": null
+            }
+          ]
+        }
+      ]
     },
     "update": {
-      "created_by_id": "{{user.id}}"
+      "$or": [
+        {
+          "$and": [
+            {
+              "data.team_id": "{{user.data.team_id}}"
+            },
+            {
+              "data.team_id": {
+                "$ne": null
+              }
+            }
+          ]
+        },
+        {
+          "$and": [
+            {
+              "created_by_id": "{{user.id}}"
+            },
+            {
+              "data.team_id": null
+            }
+          ]
+        }
+      ]
     },
     "delete": {
-      "created_by_id": "{{user.id}}"
+      "$or": [
+        {
+          "$and": [
+            {
+              "data.team_id": "{{user.data.team_id}}"
+            },
+            {
+              "data.team_id": {
+                "$ne": null
+              }
+            }
+          ]
+        },
+        {
+          "$and": [
+            {
+              "created_by_id": "{{user.id}}"
+            },
+            {
+              "data.team_id": null
+            }
+          ]
+        }
+      ]
     }
   }
 }

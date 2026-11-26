@@ -1,8 +1,17 @@
 {
   "name": "NoticeBatch",
   "type": "object",
-  "description": "A batch of annual lead service line notices queued for print and mail.",
+  "description": "A batch of annual lead service line notices queued for print and mail. Shared with the owner's team; personal (team_id null) records are private to their creator.",
   "properties": {
+    "team_id": {
+      "type": "string",
+      "title": "Team ID",
+      "description": "Team that owns this record. Null for a personal record, visible only to its creator. Set on create; only server functions move records between teams.",
+      "rls": {
+        "create": true,
+        "update": false
+      }
+    },
     "system_ids": {
       "type": "array",
       "items": {
@@ -26,14 +35,102 @@
     "queued_date"
   ],
   "rls": {
+    "create": {
+      "$or": [
+        {
+          "$and": [
+            {
+              "data.team_id": "{{user.data.team_id}}"
+            },
+            {
+              "data.team_id": {
+                "$ne": null
+              }
+            }
+          ]
+        },
+        {
+          "data.team_id": null
+        }
+      ]
+    },
     "read": {
-      "created_by_id": "{{user.id}}"
+      "$or": [
+        {
+          "$and": [
+            {
+              "data.team_id": "{{user.data.team_id}}"
+            },
+            {
+              "data.team_id": {
+                "$ne": null
+              }
+            }
+          ]
+        },
+        {
+          "$and": [
+            {
+              "created_by_id": "{{user.id}}"
+            },
+            {
+              "data.team_id": null
+            }
+          ]
+        }
+      ]
     },
     "update": {
-      "created_by_id": "{{user.id}}"
+      "$or": [
+        {
+          "$and": [
+            {
+              "data.team_id": "{{user.data.team_id}}"
+            },
+            {
+              "data.team_id": {
+                "$ne": null
+              }
+            }
+          ]
+        },
+        {
+          "$and": [
+            {
+              "created_by_id": "{{user.id}}"
+            },
+            {
+              "data.team_id": null
+            }
+          ]
+        }
+      ]
     },
     "delete": {
-      "created_by_id": "{{user.id}}"
+      "$or": [
+        {
+          "$and": [
+            {
+              "data.team_id": "{{user.data.team_id}}"
+            },
+            {
+              "data.team_id": {
+                "$ne": null
+              }
+            }
+          ]
+        },
+        {
+          "$and": [
+            {
+              "created_by_id": "{{user.id}}"
+            },
+            {
+              "data.team_id": null
+            }
+          ]
+        }
+      ]
     }
   }
 }

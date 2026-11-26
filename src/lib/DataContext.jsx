@@ -1,5 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
+import { teamIdOf, teamRoleOf } from "@/lib/team";
 
 const DataContext = createContext(null);
 
@@ -12,8 +14,13 @@ export function useData() {
   return ctx;
 }
 
-// Loads the signed-in user's water systems once and shares them across pages.
+// Loads the water systems the signed-in user can see (their team's, or their
+// own on a personal account) and shares them across pages. `teamId` is stamped
+// on every record the app creates so the whole team sees it.
 export function DataProvider({ children }) {
+  const { user } = useAuth();
+  const teamId = teamIdOf(user);
+  const teamRole = teamRoleOf(user);
   const [systems, setSystems] = useState(null);
   const [loadError, setLoadError] = useState(false);
 
@@ -28,9 +35,10 @@ export function DataProvider({ children }) {
     }
   }, []);
 
+  // Reload when the user joins, leaves or switches team.
   useEffect(() => {
     reload();
-  }, [reload]);
+  }, [reload, teamId]);
 
   // Save a change and reflect it locally right away.
   const updateSystem = useCallback(
@@ -47,8 +55,8 @@ export function DataProvider({ children }) {
   );
 
   const value = useMemo(
-    () => ({ systems, loading: systems === null, loadError, reload, updateSystem }),
-    [systems, loadError, reload, updateSystem]
+    () => ({ systems, loading: systems === null, loadError, reload, updateSystem, teamId, teamRole }),
+    [systems, loadError, reload, updateSystem, teamId, teamRole]
   );
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

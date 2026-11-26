@@ -7,6 +7,26 @@
         "admin",
         "user"
       ]
+    },
+    "team_id": {
+      "type": "string",
+      "title": "Team ID",
+      "description": "The team this user belongs to. Null for a personal account. Set only by server functions (create, join, leave, remove).",
+      "rls": {
+        "write": false
+      }
+    },
+    "team_role": {
+      "type": "string",
+      "title": "Team Role",
+      "enum": [
+        "owner",
+        "member"
+      ],
+      "description": "Owner manages the team's members and invite code.",
+      "rls": {
+        "write": false
+      }
     }
   },
   "required": [

@@ -81,7 +81,7 @@ function AddLineForm({ onAdd }) {
 export default function SystemDetail({ id }) {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { systems, loading, updateSystem, reload } = useData();
+  const { systems, loading, updateSystem, reload, teamId } = useData();
   const system = (systems || []).find((s) => s.id === id);
   const [lines, setLines] = useState(null);
   const [editing, setEditing] = useState(false);
@@ -156,7 +156,7 @@ export default function SystemDetail({ id }) {
   // A new line record is a new line in the inventory, so its count goes up.
   const addLine = async (data) => {
     try {
-      await base44.entities.ServiceLine.create({ ...data, system_id: system.id, verified_date: data.material === "unknown" ? undefined : todayIso() });
+      await base44.entities.ServiceLine.create({ ...data, team_id: system.team_id ?? teamId, system_id: system.id, verified_date: data.material === "unknown" ? undefined : todayIso() });
       const field = MATERIALS.find((m) => m.value === data.material).field;
       await updateSystem(system.id, { [field]: (system[field] || 0) + 1 });
       await loadLines();

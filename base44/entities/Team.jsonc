@@ -1,0 +1,36 @@
+{
+  "name": "Team",
+  "type": "object",
+  "description": "An operator company. Members share water systems, service lines and notice batches. Created and changed only through server functions.",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Team Name",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "invite_code": {
+      "type": "string",
+      "title": "Invite Code",
+      "description": "Code new members enter to join. Only the owner can read it.",
+      "rls": {
+        "read": {
+          "user_condition": {
+            "data.team_role": "owner"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "create": false,
+    "read": {
+      "id": "{{user.data.team_id}}"
+    },
+    "update": false,
+    "delete": false
+  }
+}

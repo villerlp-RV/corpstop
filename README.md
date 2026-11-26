@@ -8,6 +8,7 @@ A console for contract water operators who run many small community water system
 | `/systems/$id` | One system: inventory totals, readiness checklist, replacement pace, service lines with field verification of unknown lines. |
 | `/notices` | Pick systems, preview the annual notice letter, queue a batch for print and mail. |
 | `/reports` | Systems grouped by state, with a CSV of inventory totals to copy or download. |
+| `/team` | Create a team or join one with an invite code; the owner sees the code, renames the team and removes members. |
 
 All pages sit under `src/routes/_authed/` (sign-in required). Page components are in `src/components/lcri/`, styles in `src/lcri.css` (scoped under `.lcri-app`).
 
@@ -17,7 +18,14 @@ All pages sit under `src/routes/_authed/` (sign-in required). Page components ar
 - `ServiceLine`: one customer line, its material and how it was identified.
 - `NoticeBatch`: a queued batch of annual notices.
 
-Each entity is private to the user who created it (row-level security on `created_by_id`). Identifying an unknown line moves one count on its `WaterSystem` to the material found.
+Identifying an unknown line moves one count on its `WaterSystem` to the material found.
+
+### Teams
+
+- `Team`: an operator company (`name`, `invite_code`). Created and changed only by server functions; members can read their own team, and only the owner can read `invite_code`.
+- `User.team_id` / `User.team_role` (`owner` or `member`) are locked by field-level security (`write: false`), so users can't put themselves on a team. The server functions in `src/lib/server-fns.js` are the only way to set them: each runs `requireUser`, then the rules in `src/lib/team.js`, then uses the service role (`src/lib/team-service.js`).
+- `WaterSystem`, `ServiceLine` and `NoticeBatch` carry `team_id`. Row-level security lets every member of that team read and edit them; a record with no `team_id` is personal and visible only to its creator. `team_id` can be set on create but not changed afterwards except by the server.
+- Creating a team moves the owner's personal records into it. Joining offers the same. Leaving or being removed ends access at once; records stay with the team. Owners can't leave (remove the other members first).
 
 ### Rules encoded (confirm before relying on them)
 
@@ -32,7 +40,7 @@ These are planning aids, not compliance advice.
 
 ### Next build steps
 
-- Team accounts so an operator's field techs share its systems.
+- Ownership transfer and team deletion.
 - CSV import of service-line inventories.
 - Per-state filing templates and a mailing integration.
 

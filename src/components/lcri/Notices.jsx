@@ -11,7 +11,7 @@ const MATERIAL_PHRASE = {
 };
 
 export default function Notices() {
-  const { systems, loading, updateSystem } = useData();
+  const { systems, loading, updateSystem, teamId } = useData();
   const list = systems || [];
   const [selected, setSelected] = useState(null);
   const [previewId, setPreviewId] = useState(null);
@@ -56,7 +56,7 @@ export default function Notices() {
     setQueuing(true);
     const today = todayIso();
     try {
-      await base44.entities.NoticeBatch.create({ system_ids: chosen.map((s) => s.id), letter_count: letters, queued_date: today });
+      await base44.entities.NoticeBatch.create({ team_id: teamId, system_ids: chosen.map((s) => s.id), letter_count: letters, queued_date: today });
       for (const s of chosen) await updateSystem(s.id, { last_notice_date: today });
       setSelected(new Set());
       notify(`${fmt(letters)} letters queued for ${chosen.length} ${chosen.length === 1 ? "system" : "systems"}`);
