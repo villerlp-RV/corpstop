@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Camera as CameraIcon, ImagePlus, X } from "lucide-react";
 import { notify } from "@/components/lcri/notify";
+import { continuousFocus, tapFocus, tapToPicturePoint } from "@/lib/camera-focus";
 
 const MAX_EDGE = 1600; // px; keeps photos readable and uploads small on a weak signal
 const QUALITY = 0.82;
@@ -31,7 +32,11 @@ async function fileToJpeg(file) {
 // browser can't open the camera here (no permission, no getUserMedia).
 function CameraSheet({ onShot, onClose, onFallback }) {
   const video = useRef(null);
+  const track = useRef(null);
+  const caps = useRef(null);
   const [ready, setReady] = useState(false);
+  const [ring, setRing] = useState(null); // { left, top, key } where the tech tapped
+  const refocusTimer = useRef(null);
   const [taken, setTaken] = useState(0);
   // Keep the latest callback without restarting the camera on every render.
   const fallbackRef = useRef(onFallback);
@@ -47,6 +52,11 @@ function CameraSheet({ onShot, onClose, onFallback }) {
         if (cancelled) return;
         video.current.srcObject = stream;
         await video.current.play();
+        // Autofocus: keep refocusing as the phone moves, where the camera allows it.
+        track.current = stream.getVideoTracks()[0] || null;
+        caps.current = track.current?.getCapabilities?.() || null;
+        const cont = continuousFocus(caps.current);
+        if (cont) await track.current.applyConstraints(cont).catch(() => {});
         setReady(true);
       } catch {
         if (!cancelled) fallbackRef.current();
@@ -54,9 +64,30 @@ function CameraSheet({ onShot, onClose, onFallback }) {
     })();
     return () => {
       cancelled = true;
+      clearTimeout(refocusTimer.current);
       stream?.getTracks().forEach((t) => t.stop());
     };
   }, []);
+
+  // Tap to focus on a spot; then return to continuous autofocus.
+  const focusAt = async (e) => {
+    const v = video.current;
+    if (!ready || !v) return;
+    const box = v.getBoundingClientRect();
+    const tapX = e.clientX - box.left;
+    const tapY = e.clientY - box.top;
+    const point = tapToPicturePoint(tapX, tapY, box, v.videoWidth, v.videoHeight);
+    if (!point) return;
+    setRing({ left: tapX, top: tapY, key: Date.now() });
+    const plan = tapFocus(caps.current, point.x, point.y);
+    if (plan) await track.current?.applyConstraints(plan).catch(() => {});
+    clearTimeout(refocusTimer.current);
+    refocusTimer.current = setTimeout(() => {
+      setRing(null);
+      const cont = continuousFocus(caps.current);
+      if (cont) track.current?.applyConstraints(cont).catch(() => {});
+    }, 2500);
+  };
 
   const shoot = async () => {
     const v = video.current;
@@ -71,7 +102,11 @@ function CameraSheet({ onShot, onClose, onFallback }) {
 
   return (
     <div className="camera" role="dialog" aria-modal="true" aria-label="Camera">
-      <video ref={video} playsInline muted className="camera-view" />
+      <div className="camera-stage" onPointerUp={focusAt}>
+        <video ref={video} playsInline muted className="camera-view" />
+        {ring && <span key={ring.key} className="focus-ring" style={{ left: ring.left, top: ring.top }} aria-hidden="true" />}
+        {ready && <p className="camera-hint">Tap to focus</p>}
+      </div>
       {!ready && <p className="camera-wait">Opening camera…</p>}
       <div className="camera-bar">
         <button type="button" className="camera-btn" onClick={onClose} aria-label="Close camera"><X size={26} /></button>

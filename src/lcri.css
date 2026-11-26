@@ -268,3 +268,9 @@
 .lcri-app .shutter:active { transform: scale(.94); }
 .lcri-app .shutter:disabled { opacity: .4; }
 .lcri-app .off-dot { color: var(--warn); }
+.lcri-app .camera-stage { position: relative; flex: 1; min-height: 0; display: flex; touch-action: manipulation; }
+.lcri-app .camera-stage .camera-view { flex: 1; height: 100%; }
+.lcri-app .focus-ring { position: absolute; width: 72px; height: 72px; margin: -36px 0 0 -36px; border: 2px solid #ffd54a; border-radius: 8px; pointer-events: none; animation: focus-pop .35s ease-out; }
+@keyframes focus-pop { from { transform: scale(1.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .lcri-app .focus-ring { animation: none; } }
+.lcri-app .camera-hint { position: absolute; left: 0; right: 0; bottom: 12px; margin: 0; text-align: center; color: rgb(255 255 255 / .8); font-size: .85rem; pointer-events: none; }
