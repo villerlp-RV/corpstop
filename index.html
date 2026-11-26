@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Corpstop: lead service line compliance for water operators</title>
+<meta name="description" content="Corpstop helps contract water operators get every small system ready for the 1 Nov 2027 Lead and Copper Rule Improvements: portfolio readiness, field verification that works offline, annual notices and state filings.">
+<meta property="og:title" content="Corpstop">
+<meta property="og:description" content="Every service line accounted for, across every system you run. Built for the 1 Nov 2027 LCRI deadline.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/portfolio.jpg">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%231f6f9a' stroke-width='5'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23b4582b'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Corpstop marketing page: same identity as the app (steel blue, copper, pipe-material colors). */
+:root {
+  --bg: #f3f6f8; --surface: #ffffff; --sunk: #e6edf1; --ink: #15232d; --muted: #52636e; --line: #d6dfe5;
+  --water: #1f6f9a; --water-ink: #ffffff; --copper: #b4582b; --deep: #0f2a3a; --deep-ink: #e6f0f6;
+  --lead: #5b6770; --grr: #b4582b; --unk: #a86b00; --ok: #2f7d4f;
+  --f-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f171d; --surface: #16222b; --sunk: #1c2a34; --ink: #e4ecf1; --muted: #9db0bc; --line: #2a3a46;
+    --water: #5fb0dc; --water-ink: #0b1820; --copper: #e08a5a; --deep: #0a1a24; --deep-ink: #e4ecf1;
+    --lead: #9aa8b2; --grr: #e08a5a; --unk: #e0a83a; --ok: #5cbf86;
+  }
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 17px; line-height: 1.55; }
+img { max-width: 100%; height: auto; display: block; }
+a { color: var(--water); }
+:focus-visible { outline: 2px solid var(--water); outline-offset: 3px; }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 700; line-height: 1.05; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.wrap { max-width: 1140px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+.eyebrow { font-family: var(--f-mono); font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.btn { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 22px; border-radius: 6px; font-weight: 600; text-decoration: none; border: 1px solid var(--line); color: var(--ink); background: var(--surface); }
+.btn:hover { border-color: var(--water); }
+.btn--primary { background: var(--water); border-color: var(--water); color: var(--water-ink); }
+.btn--primary:hover { filter: brightness(1.08); }
+
+/* nav */
+.nav { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.nav .wrap { display: flex; align-items: center; gap: 24px; min-height: 64px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+.brand b { font-family: var(--f-display); font-size: 1.5rem; font-weight: 700; }
+.logo { width: 28px; height: 28px; border-radius: 50%; border: 4px solid var(--water); position: relative; flex: none; }
+.logo::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: var(--copper); }
+.nav-links { display: flex; gap: 22px; margin-left: auto; align-items: center; }
+.nav-links a { color: var(--muted); text-decoration: none; font-weight: 600; font-size: .95rem; }
+.nav-links a:hover { color: var(--ink); }
+.nav-links .btn { min-height: 40px; padding: 0 16px; color: var(--water-ink); }
+@media (max-width: 760px) { .nav-links a:not(.btn) { display: none; } }
+
+/* hero */
+.hero { padding: 72px 0 40px; }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 40px; align-items: end; }
+.hero h1 { font-size: clamp(2.6rem, 7vw, 4.6rem); letter-spacing: -.005em; }
+.hero h1 em { font-style: normal; color: var(--copper); }
+.lede { font-size: 1.2rem; color: var(--muted); max-width: 60ch; margin-top: 20px; }
+.cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.countdown { text-align: right; }
+.countdown .n { font-family: var(--f-display); font-size: clamp(4rem, 10vw, 7rem); font-weight: 700; line-height: .85; color: var(--water); font-variant-numeric: tabular-nums; }
+.countdown .l { font-family: var(--f-mono); font-size: .8rem; color: var(--muted); }
+@media (max-width: 820px) { .hero-grid { grid-template-columns: 1fr; } .countdown { text-align: left; } }
+
+/* pipe divider: the material mix as a band */
+.pipe { display: flex; height: 10px; gap: 3px; margin: 12px 0 0; }
+.pipe i { display: block; height: 100%; }
+
+.shot { margin-top: 36px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 20px 50px -24px rgb(15 42 58 / .45); background: var(--surface); }
+
+/* sections */
+section { padding: 72px 0; }
+.sec-head { display: flex; flex-direction: column; gap: 10px; max-width: 720px; margin-bottom: 36px; }
+.sec-head h2 { font-size: clamp(2rem, 4.6vw, 3rem); }
+.sec-head p { color: var(--muted); font-size: 1.1rem; }
+
+.rule { background: var(--deep); color: var(--deep-ink); }
+.rule .eyebrow, .rule .sec-head p { color: color-mix(in srgb, var(--deep-ink) 70%, transparent); }
+.facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border-top: 1px solid color-mix(in srgb, var(--deep-ink) 20%, transparent); }
+.fact { padding: 24px 24px 0 0; display: flex; flex-direction: column; gap: 8px; }
+.fact + .fact { padding-left: 24px; border-left: 1px solid color-mix(in srgb, var(--deep-ink) 20%, transparent); }
+.fact .k { font-family: var(--f-display); font-size: 2.4rem; font-weight: 700; color: #f0a57d; line-height: 1; }
+.fact p { color: color-mix(in srgb, var(--deep-ink) 82%, transparent); }
+@media (max-width: 760px) { .facts { grid-template-columns: 1fr; } .fact + .fact { padding-left: 0; border-left: none; border-top: 1px solid color-mix(in srgb, var(--deep-ink) 20%, transparent); } .fact { padding-bottom: 20px; } }
+
+.features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.feature { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 22px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.feature h3 { font-size: 1.45rem; }
+.feature p { color: var(--muted); }
+.feature .tag { font-family: var(--f-mono); font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--copper); }
+@media (max-width: 900px) { .features { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .features { grid-template-columns: 1fr; } }
+
+.field { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 48px; align-items: center; }
+.field ul { list-style: none; margin: 20px 0 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.field li { display: grid; grid-template-columns: 26px 1fr; gap: 10px; }
+.field li::before { content: ""; width: 14px; height: 14px; margin-top: 6px; border-radius: 50%; border: 3px solid var(--water); }
+.field li b { display: block; }
+.field li span { color: var(--muted); }
+.phone img { width: 100%; height: auto; aspect-ratio: 9 / 17; object-fit: cover; object-position: top; }
+.phone { justify-self: center; width: min(320px, 100%); border-radius: 34px; border: 10px solid var(--ink); overflow: hidden; box-shadow: 0 24px 50px -24px rgb(15 42 58 / .55); background: var(--surface); }
+@media (max-width: 820px) { .field { grid-template-columns: 1fr; } }
+
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; counter-reset: step; }
+.steps li { counter-increment: step; border-top: 3px solid var(--water); padding-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+.steps li::before { content: counter(step, decimal-leading-zero); font-family: var(--f-mono); font-size: .8rem; color: var(--water); }
+.steps b { font-family: var(--f-display); font-size: 1.35rem; }
+.steps span { color: var(--muted); }
+@media (max-width: 900px) { .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .steps { grid-template-columns: 1fr; } }
+
+.who { background: var(--sunk); }
+.who-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.who-grid div { display: flex; flex-direction: column; gap: 6px; }
+.who-grid b { font-family: var(--f-display); font-size: 1.35rem; }
+.who-grid span { color: var(--muted); }
+@media (max-width: 760px) { .who-grid { grid-template-columns: 1fr; } }
+
+.faq { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; }
+.faq details { border-bottom: 1px solid var(--line); padding: 14px 0; }
+.faq summary { cursor: pointer; font-weight: 600; font-size: 1.05rem; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+.faq summary::after { content: "+"; font-family: var(--f-mono); color: var(--water); }
+.faq details[open] summary::after { content: "–"; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq p { color: var(--muted); margin-top: 8px; }
+@media (max-width: 760px) { .faq { grid-template-columns: 1fr; } }
+
+.cta { text-align: center; }
+.cta .sec-head { margin: 0 auto 28px; align-items: center; }
+.cta .cta-row { justify-content: center; }
+
+footer { border-top: 1px solid var(--line); padding: 28px 0 calc(28px + env(safe-area-inset-bottom, 0px)); color: var(--muted); font-size: .9rem; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Corpstop home"><span class="logo" aria-hidden="true"></span><b>Corpstop</b></a>
+    <nav class="nav-links" aria-label="Page sections">
+      <a href="#features">Features</a>
+      <a href="#field">Field work</a>
+      <a href="#how">How it works</a>
+      <a href="#faq">FAQ</a>
+      <a class="btn btn--primary" data-app-link href="#start">Get started</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <div class="hero">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div>
+          <div class="eyebrow">For contract water operators · Lead and Copper Rule Improvements</div>
+          <h1>Every service line accounted for, in <em>every system</em> you run.</h1>
+          <p class="lede">Corpstop is one console for getting a whole portfolio of small water systems ready for the 1 Nov 2027 LCRI compliance date, then keeping them there: inventories, field verification, annual notices and state filings.</p>
+          <div class="cta-row">
+            <a class="btn btn--primary" data-app-link href="#start">Get started</a>
+            <a class="btn" href="#how">See how it works</a>
+          </div>
+        </div>
+        <div class="countdown" aria-live="polite">
+          <div class="n" id="days">340</div>
+          <div class="l">days to 1 Nov 2027</div>
+        </div>
+      </div>
+      <div class="pipe" aria-hidden="true">
+        <i style="flex:8;background:var(--lead)"></i><i style="flex:5;background:var(--grr)"></i><i style="flex:26;background:var(--unk)"></i><i style="flex:61;background:var(--ok)"></i>
+      </div>
+      <figure class="shot" style="margin-left:0;margin-right:0">
+        <img src="assets/portfolio.jpg" width="2560" height="1600" alt="Corpstop portfolio view: seven example water systems with readiness status, service-line material mix, unknown lines, year-one replacement targets, plan and notice status.">
+      </figure>
+    </div>
+  </div>
+
+  <section class="rule" aria-labelledby="rule-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">The rule</div>
+        <h2 id="rule-h">The deadline is fixed. The work runs for ten years after it.</h2>
+        <p>The Lead and Copper Rule Improvements (40 CFR 141 subpart I) apply to every community water system, including the small ones you operate.</p>
+      </div>
+      <div class="facts">
+        <div class="fact"><span class="k">1 Nov 2027</span><p>Compliance date. Each system needs a baseline service-line inventory, including lead connectors, and a replacement plan.</p></div>
+        <div class="fact"><span class="k">Every year</span><p>Notices to every customer served by a lead, galvanized-requiring-replacement or unknown line.</p></div>
+        <div class="fact"><span class="k">~10% a year</span><p>Average replacement pace for lead and galvanized lines, over roughly ten years.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" aria-labelledby="features-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">What Corpstop does</div>
+        <h2 id="features-h">Built for the operator who runs many systems, not the utility that runs one.</h2>
+      </div>
+      <div class="features">
+        <div class="feature"><span class="tag">Portfolio</span><h3>See which systems are behind</h3><p>Readiness for every system on one screen: material mix, share still unknown, year-one replacement target, plan and notice status.</p></div>
+        <div class="feature"><span class="tag">Field work</span><h3>Send techs to the unknown lines</h3><p>Pick lines on a system and assign them. Techs record what they find on their phone; results appear in the office as they're saved.</p></div>
+        <div class="feature"><span class="tag">Offline</span><h3>Works in the basement</h3><p>Visits save on the phone with no signal and upload on their own when the phone reconnects. Nothing gets typed twice.</p></div>
+        <div class="feature"><span class="tag">Photos</span><h3>Evidence for every line</h3><p>Take photos with the in-app camera, up to five per visit. Stored privately and attached to the service line.</p></div>
+        <div class="feature"><span class="tag">Notices</span><h3>Annual notices in one batch</h3><p>Pick the systems that are due, preview the letter with each system's details, and queue the batch.</p></div>
+        <div class="feature"><span class="tag">Filings</span><h3>Inventory exports by state</h3><p>Systems grouped by state with what's ready to file and what's blocking it. Copy or download the CSV.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="field" aria-labelledby="field-h" style="padding-top:24px">
+    <div class="wrap field">
+      <div>
+        <div class="eyebrow">Office to field, and back</div>
+        <h2 id="field-h" style="font-size:clamp(2rem,4.6vw,3rem);margin-top:10px">The office assigns. The tech records. Everyone sees it.</h2>
+        <ul>
+          <li><div><b>Assign from the desktop</b><span>Tick unknown lines on a system and give them to a team member.</span></div></li>
+          <li><div><b>Record on the phone</b><span>Big buttons for lead, galvanized or non-lead, how it was identified, notes and photos.</span></div></li>
+          <li><div><b>Stays in sync</b><span>Desktop and phone update within seconds of each other, and catch up after a dead zone.</span></div></li>
+          <li><div><b>Counts move by themselves</b><span>Each identified line updates the system's inventory and its replacement target.</span></div></li>
+        </ul>
+      </div>
+      <div class="phone"><img src="assets/field.jpg" width="1082" height="2202" alt="Corpstop on a phone: recording a visit to 126 Depot Rd as non-lead, identified by potholing, with notes and photo buttons." loading="lazy"></div>
+    </div>
+  </section>
+
+  <section id="how" aria-labelledby="how-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">How it works</div>
+        <h2 id="how-h">From a spreadsheet of systems to a filed inventory.</h2>
+      </div>
+      <ol class="steps">
+        <li><b>Add your systems</b><span>Enter each system with its inventory totals, or start from the example data to look around.</span></li>
+        <li><b>Invite your team</b><span>Create a team for your company and share the invite code with office staff and field techs.</span></li>
+        <li><b>Work the unknowns</b><span>Assign unknown lines, record visits in the field, and watch readiness move.</span></li>
+        <li><b>Notify and file</b><span>Send annual notices and export each state's inventory when it's ready.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="who" aria-labelledby="who-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Who it's for</div>
+        <h2 id="who-h">Teams that look after many small systems.</h2>
+      </div>
+      <div class="who-grid">
+        <div><b>Contract operators</b><span>Run compliance across every client system from one place, with field techs on the same page.</span></div>
+        <div><b>Rural water associations</b><span>Help member systems that don't have the staff to work through the rule on their own.</span></div>
+        <div><b>Small engineering firms</b><span>Track inventories and replacement plans for the systems you consult for.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" aria-labelledby="faq-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Questions</div>
+        <h2 id="faq-h">Good to know</h2>
+      </div>
+      <div class="faq">
+        <details><summary>Does it work without cell signal?</summary><p>Yes, once the app has been opened with signal. Assignments stay on the phone, and visits recorded with no signal upload automatically when it comes back.</p></details>
+        <details><summary>Who can see our data?</summary><p>Only people on your team. A personal account's systems are visible only to that person. Field photos are private files, opened through links that expire after ten minutes.</p></details>
+        <details><summary>Is Corpstop compliance advice?</summary><p>No. Readiness checks and targets are planning aids. Confirm requirements with your state primacy agency.</p></details>
+        <details><summary>Do we need to install anything?</summary><p>No. Corpstop runs in the browser on desktop and phone. Field techs can add it to their home screen.</p></details>
+        <details><summary>Does it file with my state directly?</summary><p>Not yet. It prepares each state's inventory as a CSV for you to submit. State-specific templates are on the roadmap.</p></details>
+        <details><summary>Can techs take photos in the app?</summary><p>Yes. The in-app camera takes up to five photos per visit, or techs can pick them from their photo library.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section id="start" class="cta" aria-labelledby="start-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Get started</div>
+        <h2 id="start-h">Know where every system stands before 1 Nov 2027.</h2>
+        <p>Sign up, load the example data to look around, then add your own systems.</p>
+      </div>
+      <div class="cta-row">
+        <a class="btn btn--primary" data-app-link href="#start">Open Corpstop</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© <span id="year">2026</span> Corpstop</span>
+    <span>Not affiliated with the U.S. EPA. Readiness and targets are planning aids, not compliance advice.</span>
+  </div>
+</footer>
+
+<script>
+  // Where "Get started" and "Open Corpstop" go: the live Corpstop app.
+  // Set this to the app's address (for example https://your-app.base44.app).
+  const APP_URL = "";
+
+  if (APP_URL) {
+    document.querySelectorAll("[data-app-link]").forEach((a) => { a.href = APP_URL; });
+  }
+  const days = Math.ceil((new Date("2027-11-01T00:00:00") - new Date()) / 864e5);
+  const el = document.getElementById("days");
+  if (days > 0) el.textContent = days.toLocaleString("en-US");
+  else { el.textContent = "Now"; el.nextElementSibling.textContent = "LCRI compliance date has passed"; }
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
