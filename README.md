@@ -1,3 +1,43 @@
+# Lead Pipe — LCRI operator console
+
+A console for contract water operators who run many small community water systems. It tracks readiness for the federal Lead and Copper Rule Improvements (LCRI) compliance date of **1 Nov 2027** across a whole portfolio.
+
+| Route | What it does |
+| --- | --- |
+| `/` | Portfolio: every system with readiness, material mix, unknown share, year-1 replacement target, plan and notice status. Add systems, load or remove example data. |
+| `/systems/$id` | One system: inventory totals, readiness checklist, replacement pace, service lines with field verification of unknown lines. |
+| `/notices` | Pick systems, preview the annual notice letter, queue a batch for print and mail. |
+| `/reports` | Systems grouped by state, with a CSV of inventory totals to copy or download. |
+
+All pages sit under `src/routes/_authed/` (sign-in required). Page components are in `src/components/lcri/`, styles in `src/lcri.css` (scoped under `.lcri-app`).
+
+### Data (`base44/entities`)
+
+- `WaterSystem`: details, inventory totals (`lead_count`, `grr_count`, `unknown_count`, `nonlead_count`), readiness flags, last notice date, scheduled replacements.
+- `ServiceLine`: one customer line, its material and how it was identified.
+- `NoticeBatch`: a queued batch of annual notices.
+
+Each entity is private to the user who created it (row-level security on `created_by_id`). Identifying an unknown line moves one count on its `WaterSystem` to the material found.
+
+### Rules encoded (confirm before relying on them)
+
+Calculations live in `src/lib/lcri.js` and are covered by `npm test`.
+
+- Replacement pool = lead + GRR + unknown lines; year-1 target = 10% of the pool, rounded up.
+- An annual notice counts as current for 365 days.
+- Readiness: *Ready* with all four checklist items done; *Behind* with over 25% unknown and at most one item done; *On track* with three items done or at most 10% unknown; otherwise *At risk*.
+- The letter wording and CSV layout are placeholders; each state has its own template.
+
+These are planning aids, not compliance advice.
+
+### Next build steps
+
+- Team accounts so an operator's field techs share its systems.
+- CSV import of service-line inventories.
+- Per-state filing templates and a mailing integration.
+
+---
+
 # Base44 App — TanStack Start
 
 A full-stack Base44 app: [TanStack Start](https://tanstack.com/start) (React 19, plain JavaScript) with file-based routes, server functions and server routes, server-rendered and hosted by Base44.

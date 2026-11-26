@@ -1,0 +1,61 @@
+{
+  "name": "ServiceLine",
+  "type": "object",
+  "description": "One customer service line in a WaterSystem, with its material and how it was identified.",
+  "properties": {
+    "system_id": {
+      "type": "string",
+      "title": "Water System ID"
+    },
+    "address": {
+      "type": "string",
+      "title": "Service Address",
+      "minLength": 1
+    },
+    "material": {
+      "type": "string",
+      "enum": [
+        "lead",
+        "grr",
+        "unknown",
+        "non_lead"
+      ],
+      "default": "unknown",
+      "title": "Material"
+    },
+    "identification_method": {
+      "type": "string",
+      "title": "How Identified",
+      "description": "e.g. Tap card, Visual (curb stop), Potholing, Customer photo"
+    },
+    "verified_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Verified Date"
+    },
+    "verified_by": {
+      "type": "string",
+      "title": "Verified By"
+    },
+    "is_example": {
+      "type": "boolean",
+      "title": "Example Data",
+      "default": false
+    }
+  },
+  "required": [
+    "system_id",
+    "address"
+  ],
+  "rls": {
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

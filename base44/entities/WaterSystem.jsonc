@@ -1,0 +1,90 @@
+{
+  "name": "WaterSystem",
+  "type": "object",
+  "description": "A small community water system the operator runs. Holds the service-line inventory totals used for readiness, replacement targets, annual notices and state filings. Private to the user who created it.",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "System Name",
+      "minLength": 1
+    },
+    "state": {
+      "type": "string",
+      "title": "State",
+      "description": "Two-letter primacy state code, e.g. OH."
+    },
+    "pwsid": {
+      "type": "string",
+      "title": "PWS ID",
+      "description": "Public water system ID, e.g. OH2140117."
+    },
+    "population": {
+      "type": "number",
+      "title": "Population Served"
+    },
+    "field_tech": {
+      "type": "string",
+      "title": "Field Tech / Contact"
+    },
+    "lead_count": {
+      "type": "number",
+      "title": "Lead Lines",
+      "default": 0
+    },
+    "grr_count": {
+      "type": "number",
+      "title": "Galvanized Requiring Replacement",
+      "default": 0
+    },
+    "unknown_count": {
+      "type": "number",
+      "title": "Unknown Material",
+      "default": 0
+    },
+    "nonlead_count": {
+      "type": "number",
+      "title": "Non-lead Lines",
+      "default": 0
+    },
+    "connectors_inventoried": {
+      "type": "boolean",
+      "title": "Lead Connectors Inventoried",
+      "default": false
+    },
+    "plan_drafted": {
+      "type": "boolean",
+      "title": "Replacement Plan Drafted",
+      "default": false
+    },
+    "last_notice_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Last Annual Notice Sent"
+    },
+    "replacements_scheduled": {
+      "type": "number",
+      "title": "Replacements Scheduled (Year 1)",
+      "default": 0
+    },
+    "is_example": {
+      "type": "boolean",
+      "title": "Example Data",
+      "default": false
+    }
+  },
+  "required": [
+    "name",
+    "state"
+  ],
+  "rls": {
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "NoticeBatch",
+  "type": "object",
+  "description": "A batch of annual lead service line notices queued for print and mail.",
+  "properties": {
+    "system_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Water Systems"
+    },
+    "letter_count": {
+      "type": "number",
+      "title": "Letters"
+    },
+    "queued_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Queued Date"
+    }
+  },
+  "required": [
+    "system_ids",
+    "letter_count",
+    "queued_date"
+  ],
+  "rls": {
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}
