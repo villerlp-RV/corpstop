@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import SystemDetail from "@/components/lcri/SystemDetail";
 
 export const Route = createFileRoute("/_authed/systems/$id")({
-  head: () => ({ meta: [{ title: "Water system — Lead Pipe" }] }),
+  head: () => ({ meta: [{ title: "Water system — LineCheck" }] }),
   component: SystemPage,
 });
 
