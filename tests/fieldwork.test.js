@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { assignPatch, fieldRecordPatch, groupBySystem, isOpen, unassignPatch, workloadByMember } from "../src/lib/fieldwork.js";
+import { addPhotosPatch, photosOf, assignPatch, fieldRecordPatch, groupBySystem, isOpen, unassignPatch, workloadByMember } from "../src/lib/fieldwork.js";
 
 const NOW = new Date("2026-11-26T15:30:00Z");
 
@@ -14,16 +14,16 @@ test("assign and unassign", () => {
 test("field record validates and marks the assignment done", () => {
   assert.match(fieldRecordPatch({}, { material: "unknown", method: "Potholing" }, {}).error, /material/);
   assert.match(fieldRecordPatch({}, { material: "lead", method: "" }, {}).error, /how you identified/);
-  const { patch } = fieldRecordPatch({}, { material: "non_lead", method: "Visual (curb stop)", notes: "  copper at curb stop ", photo_uri: "priv://x" }, { full_name: "Jo" }, NOW);
+  const { patch } = fieldRecordPatch({}, { material: "non_lead", method: "Visual (curb stop)", notes: "  copper at curb stop ", photo_uris: ["priv://x"] }, { full_name: "Jo" }, NOW);
   assert.equal(patch.material, "non_lead");
   assert.equal(patch.verified_by, "Jo");
   assert.equal(patch.field_notes, "copper at curb stop");
-  assert.equal(patch.photo_uri, "priv://x");
+  assert.deepEqual(patch.photo_uris, ["priv://x"]);
   assert.equal(patch.assignment_status, "done");
   assert.equal(patch.completed_at, NOW.toISOString());
   assert.match(patch.verified_date, /^\d{4}-\d{2}-\d{2}$/);
   const noPhoto = fieldRecordPatch({}, { material: "lead", method: "Tap card" }, {}, NOW).patch;
-  assert.equal("photo_uri" in noPhoto, false, "keeps an existing photo when none is added");
+  assert.equal("photo_uris" in noPhoto, false, "keeps existing photos when none are added");
   assert.equal(noPhoto.field_notes, null);
 });
 
@@ -42,4 +42,15 @@ test("grouping and workload", () => {
     { id: "u2", name: "Jo", open: 1, done: 1 },
     { id: "u3", name: "Ray", open: 1, done: 0 },
   ]);
+});
+
+test("photos accumulate across visits and old single-photo records", () => {
+  const old = { photo_uri: "p://1" };
+  assert.deepEqual(photosOf(old), ["p://1"]);
+  const merged = addPhotosPatch(old, ["p://2", "p://2", null]).photo_uris;
+  assert.deepEqual(merged, ["p://1", "p://2"]);
+  assert.deepEqual(photosOf({ photo_uri: "p://1", photo_uris: merged }), ["p://1", "p://2"]);
+  const many = addPhotosPatch({ photo_uris: Array.from({ length: 30 }, (_, i) => `p://${i}`) }, ["p://new"]).photo_uris;
+  assert.equal(many.length, 30);
+  assert.equal(many.at(-1), "p://new");
 });

@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { LogOut } from "lucide-react";
+import { CloudOff, LogOut, RefreshCw } from "lucide-react";
+import { useOffline } from "@/lib/OfflineQueue";
 import { useAuth } from "@/lib/AuthContext";
 import { useData } from "@/lib/DataContext";
 import { daysToDeadline } from "@/lib/lcri";
@@ -17,6 +18,7 @@ export default function AppShell({ children }) {
   const { user, logout } = useAuth();
   const { loadError, reload } = useData();
   const days = daysToDeadline();
+  const { online, summary, syncing } = useOffline();
 
   return (
     <div className="lcri-app">
@@ -36,6 +38,14 @@ export default function AppShell({ children }) {
               "LCRI compliance date has passed"
             )}
           </span>
+          {(!online || summary.total > 0) && (
+            <Link to="/field" className={`sync-chip${summary.failed ? " sync-chip--bad" : ""}`}>
+              {!online ? <CloudOff size={14} /> : <RefreshCw size={14} className={syncing ? "spin" : undefined} />}
+              {!online && "Offline"}
+              {!online && summary.total > 0 && " · "}
+              {summary.total > 0 && `${summary.total} waiting to upload`}
+            </Link>
+          )}
           <span className="who">
             {user?.full_name || user?.email}
             <button type="button" className="icon-btn" onClick={() => logout()} aria-label="Sign out" title="Sign out">

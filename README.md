@@ -27,6 +27,13 @@ Identifying an unknown line moves one count on its `WaterSystem` to the material
 - The assignee sees them under Field work → Mine on their phone. Saving a visit updates the line, uploads the photo with `UploadPrivateFile` (viewed through short-lived signed links), marks the assignment done and moves the system's count.
 - Desktop and phone stay in sync through Base44 realtime subscriptions on `WaterSystem` and `ServiceLine` (`src/lib/DataContext.jsx`). Both also refetch when the app returns to the foreground or the device comes back online, in case events were missed while a phone slept.
 
+### Offline recording and photos
+
+- Every field visit is saved to the phone first (IndexedDB: `src/lib/offline-store.js`), then uploaded by `src/lib/sync-visits.js`. With signal that happens at once; without it, the visit waits under "Waiting to upload" and the header shows the count. Uploads retry when the device comes back online or to the foreground, and every 30 seconds while anything waits. A visit keeps the time it was recorded, and the system count moves from the line's material on the server at upload time.
+- Refusals that retrying won't fix (line deleted, no permission) are marked on the visit, which the tech can retry or discard. Photo upload progress is saved, so a dropped connection doesn't upload a photo twice.
+- The tech's assignments are kept on the phone, so the list still shows with no signal. The app must have been opened with signal at least once; it does not yet install as an offline app (no service worker).
+- Photos: an in-app camera (live viewfinder, falls back to the phone's camera app) or the photo library, up to 5 per entry, downscaled to 1600 px JPEG. Any service line can get photos from the system page too. All photos are private files in `ServiceLine.photo_uris`, viewed through 10-minute signed links.
+
 ### Teams
 
 - `Team`: an operator company (`name`, `invite_code`). Created and changed only by server functions; members can read their own team, and only the owner can read `invite_code`.

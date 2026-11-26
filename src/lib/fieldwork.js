@@ -2,6 +2,19 @@
 // records what they find from a phone. Pure functions, unit-tested.
 
 export const FIELD_MATERIALS = ["lead", "grr", "non_lead"];
+export const MAX_PHOTOS_PER_ENTRY = 5;
+const MAX_PHOTOS_PER_LINE = 30;
+
+// Every photo on a line, oldest first (photo_uri is the single-photo field of early records).
+export function photosOf(line) {
+  const all = [...(line?.photo_uri ? [line.photo_uri] : []), ...(Array.isArray(line?.photo_uris) ? line.photo_uris : [])];
+  return [...new Set(all.filter(Boolean))];
+}
+
+// Field update that adds new photos to a line, keeping the ones already there.
+export function addPhotosPatch(line, newUris) {
+  return { photo_uris: [...new Set([...photosOf(line), ...(newUris || []).filter(Boolean)])].slice(-MAX_PHOTOS_PER_LINE) };
+}
 
 export function assignPatch(member, assigner, now = new Date()) {
   return {
@@ -37,7 +50,7 @@ export function fieldRecordPatch(line, input, user, now = new Date()) {
       verified_date: `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`,
       verified_by: user?.full_name || user?.email || "",
       field_notes: notes || null,
-      ...(input.photo_uri ? { photo_uri: input.photo_uri } : {}),
+      ...(input.photo_uris?.length ? addPhotosPatch(line, input.photo_uris) : {}),
       assignment_status: "done",
       completed_at: now.toISOString(),
     },

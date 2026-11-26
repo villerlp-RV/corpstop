@@ -7,9 +7,9 @@ import { linesFor, useData } from "@/lib/DataContext";
 import { notify } from "@/components/lcri/notify";
 import { MaterialBar, Modal, ReadinessPill, Swatch } from "@/components/lcri/bits";
 import SystemForm from "@/components/lcri/SystemForm";
-import { AssignmentCell } from "@/components/lcri/field-bits";
+import { AddLinePhotos, AssignmentCell, PhotoGallery } from "@/components/lcri/field-bits";
 import { useMembers } from "@/components/lcri/useMembers";
-import { assignPatch, unassignPatch } from "@/lib/fieldwork";
+import { assignPatch, photosOf, unassignPatch } from "@/lib/fieldwork";
 import {
   ID_METHODS, MATERIALS, checklist, counts, countsAfterChange, fmt, readiness,
   replacementPool, todayIso, totalLines, yearOneTarget,
@@ -325,7 +325,7 @@ export default function SystemDetail({ id }) {
             <thead>
               <tr>
                 <th className="sel"><span className="sr-only">Select</span></th>
-                <th>Address</th><th>Material</th><th>How identified</th><th>Field visit</th><th>Record here</th>
+                <th>Address</th><th>Material</th><th>How identified</th><th>Field visit</th><th>Photos</th><th>Record here</th>
               </tr>
             </thead>
             <tbody>
@@ -338,11 +338,12 @@ export default function SystemDetail({ id }) {
                   <td><Swatch material={l.material} /></td>
                   <td>{l.identification_method || "—"}{l.verified_by ? <small className="muted block">{l.verified_by}</small> : null}</td>
                   <td><AssignmentCell line={l} /></td>
+                  <td><span className="photo-cell"><PhotoGallery uris={photosOf(l)} title={`Photos · ${l.address}`} /><AddLinePhotos line={l} onSaved={loadLines} /></span></td>
                   <td>{l.material === "unknown" ? <VerifyControls line={l} onSave={verifyLine} /> : <span className="muted">—</span>}</td>
                 </tr>
               ))}
               {lines && lines.length === 0 && (
-                <tr><td colSpan={6} className="muted">No individual lines on file yet. Add lines as you visit them in the field.</td></tr>
+                <tr><td colSpan={7} className="muted">No individual lines on file yet. Add lines as you visit them in the field.</td></tr>
               )}
             </tbody>
           </table>

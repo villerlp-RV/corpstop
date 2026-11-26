@@ -91,7 +91,15 @@
     "photo_uri": {
       "type": "string",
       "title": "Photo (private file URI)",
-      "description": "From UploadPrivateFile; view with CreateFileSignedUrl."
+      "description": "Deprecated: the first photo of early records. New photos go in photo_uris."
+    },
+    "photo_uris": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Photos (private file URIs)",
+      "description": "From UploadPrivateFile; view with CreateFileSignedUrl. Newest last."
     }
   },
   "required": [

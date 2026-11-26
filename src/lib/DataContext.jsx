@@ -27,6 +27,7 @@ export function DataProvider({ children }) {
   // pages that show lines refetch them.
   const [lineVersion, setLineVersion] = useState(0);
   const [live, setLive] = useState(false);
+  const bumpLines = useCallback(() => setLineVersion((v) => v + 1), []);
 
   const reload = useCallback(async () => {
     try {
@@ -51,7 +52,6 @@ export function DataProvider({ children }) {
   useEffect(() => {
     let systemsTimer;
     let linesTimer;
-    const bumpLines = () => setLineVersion((v) => v + 1);
     const unsubs = [];
     try {
       unsubs.push(base44.entities.WaterSystem.subscribe(() => {
@@ -103,8 +103,8 @@ export function DataProvider({ children }) {
   );
 
   const value = useMemo(
-    () => ({ systems, loading: systems === null, loadError, reload, updateSystem, teamId, teamRole, lineVersion, live }),
-    [systems, loadError, reload, updateSystem, teamId, teamRole, lineVersion, live]
+    () => ({ systems, loading: systems === null, loadError, reload, updateSystem, teamId, teamRole, lineVersion, live, bumpLines }),
+    [systems, loadError, reload, updateSystem, teamId, teamRole, lineVersion, live, bumpLines]
   );
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

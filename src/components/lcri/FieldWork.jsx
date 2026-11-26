@@ -1,16 +1,18 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Camera, CheckCircle2, MapPin } from "lucide-react";
+import { CheckCircle2, CloudOff, MapPin, RefreshCw, Trash2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { unwrap, useData } from "@/lib/DataContext";
 import { notify } from "@/components/lcri/notify";
 import { Swatch } from "@/components/lcri/bits";
-import { AssignmentCell, PhotoLink } from "@/components/lcri/field-bits";
-import { FIELD_MATERIALS, fieldRecordPatch, groupBySystem, workloadByMember } from "@/lib/fieldwork";
-import { ID_METHODS, countsAfterChange, materialOf } from "@/lib/lcri";
-
-const MAX_PHOTO_BYTES = 15 * 1024 * 1024;
+import { AssignmentCell, PhotoGallery } from "@/components/lcri/field-bits";
+import { PhotoPicker } from "@/components/lcri/Camera";
+import { useOffline } from "@/lib/OfflineQueue";
+import { cacheStore } from "@/lib/offline-store";
+import { hideQueued, queuedVisit } from "@/lib/offline";
+import { FIELD_MATERIALS, MAX_PHOTOS_PER_ENTRY, fieldRecordPatch, groupBySystem, photosOf, workloadByMember } from "@/lib/fieldwork";
+import { ID_METHODS, materialOf } from "@/lib/lcri";
 
 function timeAgo(iso) {
   if (!iso) return "";
@@ -22,25 +24,16 @@ function timeAgo(iso) {
 }
 
 // One assigned line, opened into a large-target form for recording a visit.
+// Every save goes into the offline queue and uploads straight away when there
+// is signal, so it works the same with or without a connection.
 function RecordForm({ line, onSaved, onCancel }) {
   const { user } = useAuth();
-  const { systems, updateSystem } = useData();
+  const { enqueue } = useOffline();
   const [material, setMaterial] = useState("");
   const [method, setMethod] = useState(ID_METHODS[0]);
   const [notes, setNotes] = useState("");
-  const [photo, setPhoto] = useState(null);
+  const [photos, setPhotos] = useState([]);
   const [saving, setSaving] = useState(false);
-  const fileRef = useRef(null);
-
-  const pickPhoto = (e) => {
-    const f = e.target.files?.[0];
-    if (f && f.size > MAX_PHOTO_BYTES) {
-      notify("That photo is over 15 MB. Take a smaller one.", "error");
-      e.target.value = "";
-      return;
-    }
-    setPhoto(f || null);
-  };
 
   const save = async (e) => {
     e.preventDefault();
@@ -48,16 +41,13 @@ function RecordForm({ line, onSaved, onCancel }) {
     if (check.error) return notify(check.error, "error");
     setSaving(true);
     try {
-      let photo_uri;
-      if (photo) photo_uri = (await base44.integrations.Core.UploadPrivateFile({ file: photo })).file_uri;
-      const { patch } = fieldRecordPatch(line, { material, method, notes, photo_uri }, user);
-      await base44.entities.ServiceLine.update(line.id, patch);
-      const system = (systems || []).find((s) => s.id === line.system_id);
-      if (system) await updateSystem(system.id, countsAfterChange(system, line.material, material));
-      notify(`${line.address} recorded as ${materialOf(material).label}`);
+      const outcome = await enqueue(queuedVisit({ line, input: { material, method, notes }, photos, user }));
+      if (outcome === "saved") notify(`${line.address} recorded as ${materialOf(material).label}`);
+      else if (outcome === "queued") notify(`Saved on this phone. ${line.address} uploads when you have signal.`);
+      else notify(`${line.address} couldn't be saved. See "Waiting to upload".`, "error");
       onSaved();
     } catch {
-      notify("Couldn't save. Check your signal and try again; nothing was lost on this screen.", "error");
+      notify("Couldn't save on this phone. Try again.", "error");
       setSaving(false);
     }
   };
@@ -84,44 +74,102 @@ function RecordForm({ line, onSaved, onCancel }) {
         <label htmlFor={`notes-${line.id}`}>Notes <span className="muted">(optional)</span></label>
         <textarea id={`notes-${line.id}`} rows={2} maxLength={1000} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Where you looked, what you saw" />
       </div>
-      <div className="photo-row">
-        <input ref={fileRef} id={`photo-${line.id}`} type="file" accept="image/*" capture="environment" onChange={pickPhoto} hidden />
-        <button type="button" className="btn btn--big" onClick={() => fileRef.current?.click()}>
-          <Camera size={18} /> {photo ? "Retake photo" : "Add photo"}
-        </button>
-        {photo && <span className="muted photo-name">{photo.name}</span>}
+      <div className="field">
+        <span className="field-label">Photos <span className="muted">(optional)</span></span>
+        <PhotoPicker photos={photos} onChange={setPhotos} max={MAX_PHOTOS_PER_ENTRY} idPrefix={`visit-${line.id}`} />
       </div>
       <div className="record-actions">
         <button type="button" className="btn btn--big" onClick={onCancel} disabled={saving}>Cancel</button>
         <button type="submit" className="btn btn--big btn--primary" disabled={!material || saving}>
-          {saving ? (photo ? "Uploading…" : "Saving…") : "Save visit"}
+          {saving ? "Saving…" : "Save visit"}
         </button>
       </div>
     </form>
   );
 }
 
+const fmtTime = (iso) => new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+
+function WaitingList() {
+  const { queue, online, syncing, syncNow, discard, retry } = useOffline();
+  const [confirm, setConfirm] = useState(null);
+  if (!queue.length) return null;
+  return (
+    <section className="card waiting" aria-labelledby="waiting-h">
+      <div className="card-h">
+        <b id="waiting-h">Waiting to upload · {queue.length}</b>
+        <button type="button" className="btn btn--sm" disabled={!online || syncing} onClick={syncNow}>
+          <RefreshCw size={14} className={syncing ? "spin" : undefined} /> {online ? (syncing ? "Uploading…" : "Upload now") : "No signal"}
+        </button>
+      </div>
+      <ul className="done-list">
+        {queue.map((q) => (
+          <li key={q.id} className={q.error ? "is-bad" : undefined}>
+            <span>{q.address}</span>
+            <span className="swatch"><i className={materialOf(q.input.material).cls} />{materialOf(q.input.material).label}</span>
+            <span className="muted">{fmtTime(q.recordedAt)}{(q.photos?.length || q.uploaded?.length) ? ` · ${Math.max(q.photos?.length || 0, q.uploaded?.length || 0)} photos` : ""}</span>
+            {q.error ? (
+              <span className="queue-error">
+                {q.error}{" "}
+                {confirm === q.id ? (
+                  <>
+                    <button type="button" className="btn btn--sm btn--danger" onClick={() => discard(q.id)}>Discard visit</button>
+                    <button type="button" className="btn btn--sm" onClick={() => setConfirm(null)}>Keep</button>
+                  </>
+                ) : (
+                  <>
+                    <button type="button" className="btn btn--sm" onClick={() => retry(q.id)}>Try again</button>
+                    <button type="button" className="btn btn--sm btn--ghost" onClick={() => setConfirm(q.id)} aria-label={`Discard visit at ${q.address}`}><Trash2 size={14} /></button>
+                  </>
+                )}
+              </span>
+            ) : (
+              <span className="muted">{online ? "Uploading soon" : "Uploads when you have signal"}</span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 function MyWork() {
   const { user } = useAuth();
   const { systems, lineVersion } = useData();
+  const { queue, online } = useOffline();
   const [open, setOpen] = useState(null);
   const [done, setDone] = useState([]);
   const [active, setActive] = useState(null);
+  const [savedAt, setSavedAt] = useState(null); // set when showing the copy kept on this phone
+  const [cachedSystems, setCachedSystems] = useState([]);
 
+  // Online: fetch and keep a copy on the phone. No signal: show that copy.
   const load = useCallback(async () => {
     if (!user?.id) return;
+    const key = `my-work:${user.id}`;
     try {
       const [o, d] = await Promise.all([
         base44.entities.ServiceLine.filter({ assigned_to: user.id, assignment_status: "open" }, { sort: "address", limit: 500 }),
         base44.entities.ServiceLine.filter({ assigned_to: user.id, assignment_status: "done" }, { sort: "-completed_at", limit: 10 }),
       ]);
-      setOpen(unwrap(o));
-      setDone(unwrap(d));
+      const snapshot = { open: unwrap(o), done: unwrap(d), systems: (systems || []).map((s) => ({ id: s.id, name: s.name })), at: new Date().toISOString() };
+      setOpen(snapshot.open);
+      setDone(snapshot.done);
+      setSavedAt(null);
+      cacheStore.set(key, snapshot).catch(() => {});
     } catch {
-      setOpen((prev) => prev ?? []);
-      notify("Couldn't load your assignments. Check your signal; they reload when you come back to the app.", "error");
+      const snapshot = await cacheStore.get(key).catch(() => null);
+      if (snapshot) {
+        setOpen(snapshot.open);
+        setDone(snapshot.done);
+        setCachedSystems(snapshot.systems || []);
+        setSavedAt(snapshot.at);
+      } else {
+        setOpen((prev) => prev ?? []);
+        notify("Couldn't load your assignments, and none are saved on this phone yet.", "error");
+      }
     }
-  }, [user?.id]);
+  }, [user?.id, systems]);
 
   // Refetch when lines change on any device (office assigns more work, etc.).
   useEffect(() => {
@@ -129,11 +177,22 @@ function MyWork() {
   }, [load, lineVersion]);
 
   if (open === null) return <div className="spinner spinner--inline" aria-label="Loading assignments" />;
-  const groups = groupBySystem(open, systems || []);
+  const todo = hideQueued(open, queue);
+  const groups = groupBySystem(todo, systems?.length ? systems : cachedSystems);
 
   return (
     <div className="stack">
-      {open.length === 0 ? (
+      {(!online || savedAt) && (
+        <div className="offline-note" role="status">
+          <CloudOff size={16} />
+          <span>
+            {online ? "Couldn't reach the server." : "No signal."} Showing your assignments as saved on this phone
+            {savedAt ? ` at ${fmtTime(savedAt)}` : ""}. Visits you record are kept here and upload automatically.
+          </span>
+        </div>
+      )}
+      <WaitingList />
+      {todo.length === 0 ? (
         <div className="card empty">
           <CheckCircle2 size={28} />
           <h2>No open visits</h2>
@@ -184,7 +243,7 @@ function MyWork() {
                 <span>{l.address}</span>
                 <Swatch material={l.material} />
                 <span className="muted">{timeAgo(l.completed_at)}</span>
-                <PhotoLink uri={l.photo_uri} />
+                <PhotoGallery uris={photosOf(l)} />
               </li>
             ))}
           </ul>
@@ -251,7 +310,7 @@ function Everyone() {
                   <td>{l.address}</td>
                   <td>{sysName(l.system_id)}</td>
                   <td><Swatch material={l.material} /><small className="muted block">{l.identification_method}</small></td>
-                  <td><AssignmentCell line={l} /></td>
+                  <td><AssignmentCell line={l} /> <PhotoGallery uris={photosOf(l)} title={`Photos · ${l.address}`} /></td>
                   <td className="n">{timeAgo(l.completed_at)}</td>
                 </tr>
               ))}
@@ -266,12 +325,13 @@ function Everyone() {
 
 export default function FieldWork() {
   const { live } = useData();
+  const { online } = useOffline();
   const [view, setView] = useState("mine");
   return (
     <div className="stack">
       <div className="page-head">
         <div>
-          <div className="eyebrow">Field work {live && <span className="live-dot">· live</span>}</div>
+          <div className="eyebrow">Field work {online ? live && <span className="live-dot">· live</span> : <span className="off-dot">· offline</span>}</div>
           <h1>{view === "mine" ? "My visits" : "Team field work"}</h1>
         </div>
         <div className="seg" role="group" aria-label="Whose work">
