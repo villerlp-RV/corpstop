@@ -26,7 +26,7 @@ export default function AppShell({ children }) {
         <div className="in top-row">
           <Link to="/" className="brand" style={{ textDecoration: "none", color: "inherit" }}>
             <span className="logo" aria-hidden="true" />
-            <b>LineCheck</b>
+            <b>Corpstop</b>
             <span className="muted brand-sub">LCRI operator console</span>
           </Link>
           <span className="clock">

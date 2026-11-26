@@ -3,7 +3,7 @@
 // survives the app being closed. Falls back to memory if IndexedDB is blocked
 // (private browsing), so the app still works, just without surviving a reload.
 
-const DB_NAME = "linecheck-offline";
+const DB_NAME = "corpstop-offline";
 const QUEUE = "queue";
 const CACHE = "cache";
 
