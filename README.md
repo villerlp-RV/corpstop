@@ -8,6 +8,7 @@ A console for contract water operators who run many small community water system
 | `/systems/$id` | One system: inventory totals, readiness checklist, replacement pace, service lines with field verification of unknown lines. |
 | `/notices` | Pick systems, preview the annual notice letter, queue a batch for print and mail. |
 | `/reports` | Systems grouped by state, with a CSV of inventory totals to copy or download. |
+| `/field` | Field work. *Mine*: a phone-first list of the lines assigned to me; record material, method, notes and a photo. *Everyone*: open work per person and the latest results. |
 | `/team` | Create a team or join one with an invite code; the owner sees the code, renames the team and removes members. |
 
 All pages sit under `src/routes/_authed/` (sign-in required). Page components are in `src/components/lcri/`, styles in `src/lcri.css` (scoped under `.lcri-app`).
@@ -19,6 +20,12 @@ All pages sit under `src/routes/_authed/` (sign-in required). Page components ar
 - `NoticeBatch`: a queued batch of annual notices.
 
 Identifying an unknown line moves one count on its `WaterSystem` to the material found.
+
+### Field work and device sync
+
+- On a system page, office staff tick service lines and assign them to a team member (`ServiceLine.assigned_to`, `assignment_status` `open`/`done`). Rules are in `src/lib/fieldwork.js`.
+- The assignee sees them under Field work → Mine on their phone. Saving a visit updates the line, uploads the photo with `UploadPrivateFile` (viewed through short-lived signed links), marks the assignment done and moves the system's count.
+- Desktop and phone stay in sync through Base44 realtime subscriptions on `WaterSystem` and `ServiceLine` (`src/lib/DataContext.jsx`). Both also refetch when the app returns to the foreground or the device comes back online, in case events were missed while a phone slept.
 
 ### Teams
 

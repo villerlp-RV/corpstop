@@ -50,6 +50,48 @@
       "type": "boolean",
       "title": "Example Data",
       "default": false
+    },
+    "assigned_to": {
+      "type": "string",
+      "title": "Assigned To (User ID)",
+      "description": "Team member who should visit this line."
+    },
+    "assigned_to_name": {
+      "type": "string",
+      "title": "Assigned To"
+    },
+    "assigned_by_name": {
+      "type": "string",
+      "title": "Assigned By"
+    },
+    "assigned_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Assigned At"
+    },
+    "assignment_status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "done"
+      ],
+      "title": "Field Assignment Status",
+      "description": "open = waiting for a field visit; done = recorded in the field. Empty when never assigned."
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Recorded In Field At"
+    },
+    "field_notes": {
+      "type": "string",
+      "title": "Field Notes",
+      "maxLength": 1000
+    },
+    "photo_uri": {
+      "type": "string",
+      "title": "Photo (private file URI)",
+      "description": "From UploadPrivateFile; view with CreateFileSignedUrl."
     }
   },
   "required": [

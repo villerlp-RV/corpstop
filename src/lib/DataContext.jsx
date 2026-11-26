@@ -23,6 +23,10 @@ export function DataProvider({ children }) {
   const teamRole = teamRoleOf(user);
   const [systems, setSystems] = useState(null);
   const [loadError, setLoadError] = useState(false);
+  // Bumped whenever service lines change anywhere (this device or another), so
+  // pages that show lines refetch them.
+  const [lineVersion, setLineVersion] = useState(0);
+  const [live, setLive] = useState(false);
 
   const reload = useCallback(async () => {
     try {
@@ -40,6 +44,50 @@ export function DataProvider({ children }) {
     reload();
   }, [reload, teamId]);
 
+  // Live sync between devices: the office desktop and a field tech's phone see
+  // each other's changes within a second. Realtime events are batched; when the
+  // app returns to the foreground or the phone reconnects, everything refetches
+  // in case events were missed while it slept.
+  useEffect(() => {
+    let systemsTimer;
+    let linesTimer;
+    const bumpLines = () => setLineVersion((v) => v + 1);
+    const unsubs = [];
+    try {
+      unsubs.push(base44.entities.WaterSystem.subscribe(() => {
+        clearTimeout(systemsTimer);
+        systemsTimer = setTimeout(reload, 300);
+      }));
+      unsubs.push(base44.entities.ServiceLine.subscribe(() => {
+        clearTimeout(linesTimer);
+        linesTimer = setTimeout(bumpLines, 300);
+      }));
+      setLive(true);
+    } catch {
+      setLive(false);
+    }
+    const resync = () => {
+      if (document.visibilityState !== "visible") return;
+      reload();
+      bumpLines();
+    };
+    document.addEventListener("visibilitychange", resync);
+    window.addEventListener("online", resync);
+    return () => {
+      unsubs.forEach((off) => {
+        try {
+          off();
+        } catch {
+          /* already closed */
+        }
+      });
+      clearTimeout(systemsTimer);
+      clearTimeout(linesTimer);
+      document.removeEventListener("visibilitychange", resync);
+      window.removeEventListener("online", resync);
+    };
+  }, [reload, teamId]);
+
   // Save a change and reflect it locally right away.
   const updateSystem = useCallback(
     async (id, patch) => {
@@ -55,8 +103,8 @@ export function DataProvider({ children }) {
   );
 
   const value = useMemo(
-    () => ({ systems, loading: systems === null, loadError, reload, updateSystem, teamId, teamRole }),
-    [systems, loadError, reload, updateSystem, teamId, teamRole]
+    () => ({ systems, loading: systems === null, loadError, reload, updateSystem, teamId, teamRole, lineVersion, live }),
+    [systems, loadError, reload, updateSystem, teamId, teamRole, lineVersion, live]
   );
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

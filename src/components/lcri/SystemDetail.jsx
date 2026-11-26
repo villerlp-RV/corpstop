@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Check, Pencil, Plus, Trash2 } from "lucide-react";
+import { Check, Pencil, Plus, Trash2, UserPlus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { linesFor, useData } from "@/lib/DataContext";
 import { notify } from "@/components/lcri/notify";
 import { MaterialBar, Modal, ReadinessPill, Swatch } from "@/components/lcri/bits";
 import SystemForm from "@/components/lcri/SystemForm";
+import { AssignmentCell } from "@/components/lcri/field-bits";
+import { useMembers } from "@/components/lcri/useMembers";
+import { assignPatch, unassignPatch } from "@/lib/fieldwork";
 import {
   ID_METHODS, MATERIALS, checklist, counts, countsAfterChange, fmt, readiness,
   replacementPool, todayIso, totalLines, yearOneTarget,
@@ -81,7 +84,11 @@ function AddLineForm({ onAdd }) {
 export default function SystemDetail({ id }) {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { systems, loading, updateSystem, reload, teamId } = useData();
+  const { systems, loading, updateSystem, reload, teamId, lineVersion } = useData();
+  const members = useMembers();
+  const [selected, setSelected] = useState(() => new Set());
+  const [assignee, setAssignee] = useState("");
+  const [assigning, setAssigning] = useState(false);
   const system = (systems || []).find((s) => s.id === id);
   const [lines, setLines] = useState(null);
   const [editing, setEditing] = useState(false);
@@ -97,9 +104,10 @@ export default function SystemDetail({ id }) {
     }
   }, [id]);
 
+  // lineVersion changes when lines change on any device (see DataContext).
   useEffect(() => {
     loadLines();
-  }, [loadLines]);
+  }, [loadLines, lineVersion]);
 
   useEffect(() => {
     if (system) setScheduled(String(system.replacements_scheduled || 0));
@@ -163,6 +171,32 @@ export default function SystemDetail({ id }) {
       notify(`${data.address} added`);
     } catch {
       notify("Couldn't add the line. Try again.", "error");
+    }
+  };
+
+  const toggle = (lineId) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(lineId)) next.delete(lineId);
+      else next.add(lineId);
+      return next;
+    });
+
+  const assignSelected = async (unassign = false) => {
+    const member = members.find((m) => m.id === assignee);
+    if (!unassign && !member) return notify("Choose who should visit these lines.", "error");
+    setAssigning(true);
+    try {
+      const patch = unassign ? unassignPatch() : assignPatch(member, user);
+      for (const lineId of selected) await base44.entities.ServiceLine.update(lineId, patch);
+      notify(unassign ? `${selected.size} lines unassigned` : `${selected.size} lines assigned to ${member.name}`);
+      setSelected(new Set());
+      await loadLines();
+    } catch {
+      notify("Couldn't update the assignments. Try again.", "error");
+      await loadLines();
+    } finally {
+      setAssigning(false);
     }
   };
 
@@ -269,22 +303,46 @@ export default function SystemDetail({ id }) {
           <span className="muted">{lines ? `${fmt(lines.length)} on file of ${fmt(totalLines(system))} in inventory` : "Loading…"}</span>
         </div>
         <div className="card-sub"><AddLineForm onAdd={addLine} /></div>
+        {selected.size > 0 && (
+          <div className="card-sub assign-bar" role="region" aria-label="Assign selected lines">
+            <b>{selected.size} selected</b>
+            <span className="inline-form">
+              <label htmlFor="assignee">Assign to</label>
+              <select id="assignee" value={assignee} onChange={(e) => setAssignee(e.target.value)}>
+                <option value="">Choose a person…</option>
+                {members.map((m) => <option key={m.id} value={m.id}>{m.name}{m.id === user?.id ? " (me)" : ""}</option>)}
+              </select>
+              <button type="button" className="btn btn--sm btn--primary" disabled={!assignee || assigning} onClick={() => assignSelected(false)}>
+                <UserPlus size={14} /> Assign
+              </button>
+              <button type="button" className="btn btn--sm" disabled={assigning} onClick={() => assignSelected(true)}>Unassign</button>
+              <button type="button" className="btn btn--sm btn--ghost" onClick={() => setSelected(new Set())}>Clear</button>
+            </span>
+          </div>
+        )}
         <div className="tbl-wrap">
           <table>
             <thead>
-              <tr><th>Address</th><th>Material</th><th>How identified</th><th>Field verification</th></tr>
+              <tr>
+                <th className="sel"><span className="sr-only">Select</span></th>
+                <th>Address</th><th>Material</th><th>How identified</th><th>Field visit</th><th>Record here</th>
+              </tr>
             </thead>
             <tbody>
               {(lines || []).map((l) => (
-                <tr key={l.id}>
+                <tr key={l.id} className={selected.has(l.id) ? "is-selected" : undefined}>
+                  <td className="sel">
+                    <input type="checkbox" id={`sel-${l.id}`} checked={selected.has(l.id)} onChange={() => toggle(l.id)} aria-label={`Select ${l.address}`} />
+                  </td>
                   <td>{l.address}{l.is_example && <span className="tag">Example</span>}</td>
                   <td><Swatch material={l.material} /></td>
                   <td>{l.identification_method || "—"}{l.verified_by ? <small className="muted block">{l.verified_by}</small> : null}</td>
+                  <td><AssignmentCell line={l} /></td>
                   <td>{l.material === "unknown" ? <VerifyControls line={l} onSave={verifyLine} /> : <span className="muted">—</span>}</td>
                 </tr>
               ))}
               {lines && lines.length === 0 && (
-                <tr><td colSpan={4} className="muted">No individual lines on file yet. Add lines as you visit them in the field.</td></tr>
+                <tr><td colSpan={6} className="muted">No individual lines on file yet. Add lines as you visit them in the field.</td></tr>
               )}
             </tbody>
           </table>

@@ -6,6 +6,7 @@ import { daysToDeadline } from "@/lib/lcri";
 
 const NAV = [
   { to: "/", label: "Portfolio", exact: true },
+  { to: "/field", label: "Field work" },
   { to: "/notices", label: "Annual notices" },
   { to: "/reports", label: "State reports" },
   { to: "/team", label: "Team" },

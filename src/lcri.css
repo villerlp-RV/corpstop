@@ -200,3 +200,39 @@
 .lcri-app .avatar { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--sunk); font-family: var(--f-display); font-weight: 700; }
 @media (max-width: 560px) { .lcri-app .members li { grid-template-columns: 32px minmax(0, 1fr); } .lcri-app .members li > :nth-child(n+3) { grid-column: 2; justify-self: start; } }
 .lcri-app h3 + .note { margin-top: -4px; }
+
+/* Field work: assignment on desktop, recording on a phone */
+.lcri-app .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.lcri-app th.sel, .lcri-app td.sel { width: 36px; padding-right: 0; }
+.lcri-app td.sel input { width: 18px; height: 18px; accent-color: var(--water); }
+.lcri-app tr.is-selected { background: color-mix(in srgb, var(--water) 8%, var(--surface)); }
+.lcri-app .assign-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; background: color-mix(in srgb, var(--water) 10%, var(--surface)); }
+.lcri-app .assign-cell { display: inline-flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; max-width: 260px; }
+.lcri-app .assign-cell small { flex-basis: 100%; }
+.lcri-app .photo-link { display: inline-flex; align-items: center; gap: 4px; font-size: .85rem; }
+.lcri-app .live-dot { color: var(--good); }
+.lcri-app .kpis--auto { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+.lcri-app .field-group { display: flex; flex-direction: column; gap: 10px; }
+.lcri-app .field-group h2 { font-size: 1.3rem; }
+.lcri-app .visit-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.lcri-app .visit { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 14px; }
+.lcri-app .visit-h { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.lcri-app .visit-h b { font-size: 1.05rem; }
+.lcri-app .visit-h .btn { min-height: 44px; padding-inline: 18px; }
+.lcri-app .record { display: flex; flex-direction: column; gap: 14px; border-top: 1px solid var(--line); padding-top: 14px; }
+.lcri-app .choice { border: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.lcri-app .choice legend { font-size: .85rem; font-weight: 600; margin-bottom: 6px; padding: 0; }
+.lcri-app .choice label { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; border: 2px solid var(--line); border-radius: 8px; font-weight: 600; cursor: pointer; background: var(--surface); text-align: center; }
+.lcri-app .choice label.on { border-color: var(--water); background: color-mix(in srgb, var(--water) 12%, var(--surface)); }
+.lcri-app .choice input { position: absolute; opacity: 0; pointer-events: none; }
+.lcri-app .choice label:has(input:focus-visible) { outline: 2px solid var(--water); outline-offset: 2px; }
+.lcri-app .choice i { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }
+.lcri-app .record select, .lcri-app .record textarea { padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); width: 100%; font-size: 16px; }
+.lcri-app .btn--big { min-height: 48px; padding-inline: 18px; font-size: 1rem; justify-content: center; }
+.lcri-app .photo-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.lcri-app .photo-name { font-size: .85rem; overflow-wrap: anywhere; }
+.lcri-app .record-actions { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+.lcri-app .done-list { list-style: none; margin: 0; padding: 0; }
+.lcri-app .done-list li { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.lcri-app .done-list li:last-child { border-bottom: none; }
+.lcri-app .done-list li > span:first-child { font-weight: 600; flex: 1 1 160px; }
