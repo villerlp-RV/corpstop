@@ -125,7 +125,7 @@
 .lcri-app .pill--ready { color: var(--good); } .lcri-app .pill--track { color: var(--water); } .lcri-app .pill--risk { color: var(--warn); } .lcri-app .pill--behind { color: var(--crit); }
 
 /* system detail */
-.lcri-app .grid2 { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px; }
+.lcri-app .grid2 { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px; align-items: start; }
 @media (max-width: 860px) { .lcri-app .grid2 { grid-template-columns: 1fr; } }
 .lcri-app .checklist { list-style: none; margin: 0; padding: 0; }
 .lcri-app .checklist li { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: start; padding: 10px 0; border-top: 1px solid var(--line); }
