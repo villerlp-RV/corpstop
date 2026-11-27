@@ -59,6 +59,56 @@
         }
       }
     },
+    "customer_name": {
+      "type": "string",
+      "title": "Customer Name",
+      "description": "Person or account at the service address, for notices.",
+      "maxLength": 120,
+      "rls": {
+        "update": {
+          "$or": [
+            {
+              "data.team_id": null
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            },
+            {
+              "user_condition": {
+                "data.perm_edit": true
+              }
+            }
+          ]
+        }
+      }
+    },
+    "customer_email": {
+      "type": "string",
+      "title": "Customer Email",
+      "description": "Where emailed annual notices for this line go.",
+      "maxLength": 200,
+      "rls": {
+        "update": {
+          "$or": [
+            {
+              "data.team_id": null
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            },
+            {
+              "user_condition": {
+                "data.perm_edit": true
+              }
+            }
+          ]
+        }
+      }
+    },
     "material": {
       "type": "string",
       "enum": [

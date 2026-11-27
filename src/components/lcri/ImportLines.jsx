@@ -98,7 +98,7 @@ export default function ImportLines({ system, teamId, onDone, updateSystem }) {
             Upload a CSV with one service line per row. LineTally looks for an <b>address</b> column (or house number and
             street), and optionally <b>material</b> (lead, galvanized/GRR, unknown, non-lead, copper, plastic…) and{" "}
             <b>identification method</b>, <b>connector</b>, and <b>system-side</b> / <b>customer-side material</b> for split
-            ownership. Addresses already on file are skipped.{" "}
+            ownership, and <b>customer name</b> / <b>email</b> for emailed notices. Addresses already on file are skipped.{" "}
             <button type="button" className="linkbtn" onClick={downloadTemplate}>Download a template</button>
           </p>
           <label className="file-pick">

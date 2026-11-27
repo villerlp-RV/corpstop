@@ -11,6 +11,7 @@ const NAV = [
   { to: "/field", label: "Field work" },
   { to: "/notices", label: "Annual notices" },
   { to: "/reports", label: "State reports" },
+  { to: "/email", label: "Email", edit: true },
   { to: "/team", label: "Team" },
   { to: "/company", label: "Company" },
 ];
@@ -19,7 +20,7 @@ const NAV = [
 export default function AppShell({ children }) {
   const { user, logout } = useAuth();
   const { loadError, reload, can } = useData();
-  const nav = can.admin ? [...NAV, { to: "/admin", label: "Admin" }] : NAV;
+  const nav = [...NAV.filter((n) => !n.edit || can.edit), ...(can.admin ? [{ to: "/admin", label: "Admin" }] : [])];
   const days = daysToDeadline();
   const { online, summary, syncing } = useOffline();
 

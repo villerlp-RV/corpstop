@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { base44 } from "@/api/base44Client";
 import { linesFor, useData } from "@/lib/DataContext";
 import { notify } from "@/components/lcri/notify";
@@ -150,6 +151,11 @@ export default function Notices() {
           </article>
         )}
       </div>
+      {can.edit && (
+        <p className="note">
+          Have customer email addresses? <Link to="/email">Email the notices</Link> to them instead (needs a verified sending domain).
+        </p>
+      )}
       <p className="note">Letter count is the number of lead, GRR and unknown lines in each system. Queuing records the batch and marks each system&apos;s notice as sent today.</p>
     </div>
   );

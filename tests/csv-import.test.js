@@ -65,3 +65,10 @@ test("reads connectors and split ownership columns", () => {
   assert.match(plan.warnings[0].reason, /Connector "maybe" not recognised/);
   assert.deepEqual([plan.lines[3].system_side, plan.lines[3].customer_side, plan.lines[3].material], ["non_lead", "unknown", "unknown"]);
 });
+
+test("reads customer name and email for emailed notices", () => {
+  const plan = planImport("Address,Material,Customer Name,Email\n1 A St,lead,Ann Lee,Ann@Example.com\n2 A St,lead,,not-an-email\n");
+  assert.deepEqual([plan.lines[0].customer_name, plan.lines[0].customer_email], ["Ann Lee", "ann@example.com"]);
+  assert.equal(plan.lines[1].customer_email, undefined);
+  assert.match(plan.warnings[0].reason, /Email "not-an-email" not valid/);
+});

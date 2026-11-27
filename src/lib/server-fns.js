@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth-middleware";
 import * as teams from "@/lib/team-service";
+import { sendOne } from "@/lib/email-service";
 
 // Team membership lives in User.team_id / User.team_role, which field-level
 // security makes read-only for users, so these server functions are the only
@@ -53,3 +54,21 @@ export const removeLinePhoto = createServerFn({ method: "POST" })
   .middleware([requireUser])
   .validator(z.object({ lineId: z.string().min(1).max(100), uri: z.string().min(1).max(2000) }))
   .handler(({ data, context }) => teams.removePhoto(admin(context), context.user, data));
+
+const attachment = z.object({ filename: z.string().min(1).max(120), content: z.string().max(7_200_000) });
+export const sendEmail = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(
+    z.object({
+      kind: z.enum(["notice", "report", "assignment", "state"]),
+      to: z.string().max(200),
+      subject: z.string().max(300),
+      html: z.string().max(300_000),
+      text: z.string().max(100_000),
+      fromName: z.string().max(80).optional(),
+      systemId: z.string().max(100).optional(),
+      lineId: z.string().max(100).optional(),
+      attachments: z.array(attachment).max(5).optional(),
+    })
+  )
+  .handler(({ data, context }) => sendOne(context.getBase44(), admin(context), context.user, data));

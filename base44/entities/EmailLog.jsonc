@@ -1,0 +1,104 @@
+{
+  "name": "EmailLog",
+  "type": "object",
+  "description": "One email LineTally sent: annual notices to customers, reports to clients, assignments to the team, exports to the state. Kept as a record of who was sent what and when.",
+  "properties": {
+    "team_id": {
+      "type": "string",
+      "title": "Team ID",
+      "description": "Team that owns this record. Null for a personal record, visible only to its creator. Set on create; only server functions move records between teams.",
+      "rls": {
+        "create": true,
+        "update": false
+      }
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "notice",
+        "report",
+        "assignment",
+        "state"
+      ],
+      "title": "Kind"
+    },
+    "to": {
+      "type": "string",
+      "title": "To"
+    },
+    "subject": {
+      "type": "string",
+      "title": "Subject"
+    },
+    "system_id": {
+      "type": "string",
+      "title": "Water System ID"
+    },
+    "line_id": {
+      "type": "string",
+      "title": "Service Line ID"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "sent",
+        "failed"
+      ],
+      "title": "Status"
+    },
+    "error": {
+      "type": "string",
+      "title": "Error"
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Attachment names"
+    },
+    "sent_at": {
+      "type": "string",
+      "title": "Sent At"
+    },
+    "sent_by": {
+      "type": "string",
+      "title": "Sent By"
+    },
+    "sender_id": {
+      "type": "string",
+      "title": "Sender User ID"
+    }
+  },
+  "required": [
+    "kind",
+    "to",
+    "subject",
+    "status",
+    "sent_at"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "$and": [
+            {
+              "data.team_id": "{{user.data.team_id}}"
+            },
+            {
+              "data.team_id": {
+                "$ne": null
+              }
+            }
+          ]
+        },
+        {
+          "data.sender_id": "{{user.id}}"
+        }
+      ]
+    },
+    "create": false,
+    "update": false,
+    "delete": false
+  }
+}

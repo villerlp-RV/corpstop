@@ -12,6 +12,16 @@
         "update": false
       }
     },
+    "state_contacts": {
+      "type": "array",
+      "title": "State Contacts",
+      "description": "Primacy agency contacts per state, for emailing inventory exports.",
+      "items": {
+        "type": "object",
+        "properties": { "state": { "type": "string" }, "email": { "type": "string" }, "name": { "type": "string" } },
+        "required": ["state", "email"]
+      }
+    },
     "business_name": {
       "type": "string",
       "title": "Business Name",
