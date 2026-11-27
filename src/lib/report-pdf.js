@@ -258,7 +258,7 @@ export async function renderReportPdf(report) {
     doc.line(M, H - 36, right, H - 36);
     font(8, "normal", MUTED);
     doc.text([lh.name, report.subtitle].filter(Boolean).join(" · "), M, H - 22, { maxWidth: CW - 140 });
-    doc.text(`Page ${p} of ${pages} · Generated with Corpstop`, right, H - 22, { align: "right" });
+    doc.text(`Page ${p} of ${pages} · LineTally by SKC Software Solutions`, right, H - 22, { align: "right" });
   }
   return doc;
 }
