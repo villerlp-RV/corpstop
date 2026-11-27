@@ -81,7 +81,7 @@ export function systemReport(system, lines, profile, { now = new Date(), prepare
       note: `${fmt(lines.length)} service lines on file of ${fmt(t)} in the inventory. ${fmt(visited)} recorded in the field.`,
     },
     notes: sortedLines.filter((l) => l.field_notes).map((l) => [l.address, l.field_notes]),
-    disclaimer: "Readiness and targets are planning aids based on the inventory recorded in Linetally, not compliance advice. Confirm requirements with your state primacy agency.",
+    disclaimer: "Readiness and targets are planning aids based on the inventory recorded in LineTally, not compliance advice. Confirm requirements with your state primacy agency.",
   };
 }
 
@@ -114,6 +114,6 @@ export function portfolioReport(systems, profile, { now = new Date(), preparedBy
         ];
       }),
     },
-    disclaimer: "Readiness and targets are planning aids based on the inventory recorded in Linetally, not compliance advice. Confirm requirements with your state primacy agency.",
+    disclaimer: "Readiness and targets are planning aids based on the inventory recorded in LineTally, not compliance advice. Confirm requirements with your state primacy agency.",
   };
 }

@@ -27,7 +27,7 @@ export default function AppShell({ children }) {
         <div className="in top-row">
           <Link to="/" className="brand" style={{ textDecoration: "none", color: "inherit" }}>
             <span className="logo" aria-hidden="true" />
-            <b>Linetally</b>
+            <b>LineTally</b>
             <span className="muted brand-sub">LCRI operator console</span>
           </Link>
           <span className="clock">
@@ -75,7 +75,8 @@ export default function AppShell({ children }) {
         {children}
       </main>
       <footer className="in foot">
-        Readiness and targets are planning aids, not compliance advice. Confirm requirements with your state primacy agency.
+        <span>Readiness and targets are planning aids, not compliance advice. Confirm requirements with your state primacy agency.</span>
+        <span className="foot-brand">LineTally · SKC Software Solutions</span>
       </footer>
     </div>
   );

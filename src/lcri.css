@@ -1,4 +1,4 @@
-/* Linetally / LCRI console styles. Every rule is scoped under .lcri-app so it never touches the auth pages or the shadcn kit. Generated from a flat stylesheet; edit freely. */
+/* LineTally / LCRI console styles. Every rule is scoped under .lcri-app so it never touches the auth pages or the shadcn kit. Generated from a flat stylesheet; edit freely. */
 /* LCRI Operator Console — water-utility palette: steel blue for action, copper for "ours", pipe-material colors for data. */
 .lcri-app {
   --bg: #f3f6f8; --surface: #ffffff; --sunk: #eaf0f3; --ink: #15232d; --muted: #5a6b76; --line: #d6dfe5;
@@ -292,3 +292,5 @@
 .lcri-app .lh-rule { height: 1px; background: var(--line); }
 .lcri-app .lh-title { color: var(--water); }
 .lcri-app .lh-sys { font-family: var(--f-display); font-size: 1.4rem; }
+.lcri-app .foot { display: flex; flex-wrap: wrap; gap: 6px 24px; justify-content: space-between; }
+.lcri-app .foot-brand { font-weight: 600; white-space: nowrap; }

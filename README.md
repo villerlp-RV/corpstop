@@ -1,4 +1,6 @@
-# Linetally — LCRI operator console
+# LineTally — LCRI operator console
+
+By SKC Software Solutions.
 
 A console for contract water operators who run many small community water systems. It tracks readiness for the federal Lead and Copper Rule Improvements (LCRI) compliance date of **1 Nov 2027** across a whole portfolio.
 

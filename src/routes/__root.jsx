@@ -13,7 +13,7 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Linetally" },
+      { title: "LineTally" },
       { name: "description", content: "LCRI operator console: lead service line readiness, replacement targets, annual notices and state filings across many small water systems." },
     ],
     // No icon link: the platform adds the app's logo when serving.
