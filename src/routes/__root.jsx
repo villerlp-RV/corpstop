@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { HeadContent, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
-import { reloadForNewVersion } from "@/lib/stale-build";
+import { BOOTSTRAP_GUARD_SCRIPT, reloadForNewVersion } from "@/lib/stale-build";
 import { DefaultCatchBoundary } from "@/components/DefaultCatchBoundary";
 import { NotFound } from "@/components/NotFound";
 import { Toaster } from "@/components/ui/sonner";
@@ -57,6 +57,8 @@ function RootDocument({ children }) {
   return (
     <html lang="en">
       <head>
+        {/* Runs before any module is fetched: recovers a tab whose entry chunk is gone after a new version. */}
+        <script dangerouslySetInnerHTML={{ __html: BOOTSTRAP_GUARD_SCRIPT }} />
         <HeadContent />
       </head>
       {/* data-react-root: the builder's preview bridge looks for #root and falls back to this. */}
