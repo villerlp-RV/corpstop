@@ -308,3 +308,13 @@
 .lcri-app .perm-legend div { display: grid; grid-template-columns: 70px 1fr; gap: 10px; }
 .lcri-app .perm-legend dt { font-weight: 600; }
 .lcri-app .perm-legend dd { margin: 0; color: var(--muted); }
+
+/* CSV import */
+.lcri-app .add-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.lcri-app .file-pick { display: flex; align-items: center; gap: 10px; border: 1px dashed var(--line); border-radius: 8px; padding: 14px; cursor: pointer; overflow-wrap: anywhere; }
+.lcri-app .file-pick:hover, .lcri-app .file-pick:focus-within { border-color: var(--water); background: var(--sunk); }
+.lcri-app .import-sum { display: grid; gap: 2px; }
+.lcri-app .import-issues summary { cursor: pointer; color: var(--muted); }
+.lcri-app .import-issues ul { margin: 8px 0 0; padding-left: 18px; font-size: .88rem; color: var(--muted); max-height: 180px; overflow: auto; }
+.lcri-app .check--top { align-items: flex-start; }
+.lcri-app .check--top input { margin-top: 3px; flex: none; }
