@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Privacy Policy · LineTally</title>
+<meta name="description" content="How LineTally, by SKC Software Solutions, collects, uses and protects information.">
+<link rel="canonical" href="https://linetally.com/privacy/">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%231f6f9a' stroke-width='5'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23b4582b'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+:root { --bg:#f3f6f8; --surface:#fff; --ink:#15232d; --muted:#52636e; --line:#d6dfe5; --water:#1f6f9a; --copper:#b4582b;
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif; --f-body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif; --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0f171d; --surface:#16222b; --ink:#e4ecf1; --muted:#9db0bc; --line:#2a3a46; --water:#5fb0dc; --copper:#e08a5a; } }
+*,*::before,*::after { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:17px; line-height:1.6; }
+a { color:var(--water); }
+:focus-visible { outline:2px solid var(--water); outline-offset:3px; }
+.wrap { max-width:860px; margin:0 auto; padding-left:max(20px,env(safe-area-inset-left,0px)); padding-right:max(20px,env(safe-area-inset-right,0px)); }
+.nav { border-bottom:1px solid var(--line); background:var(--surface); }
+.nav .wrap { max-width:1140px; display:flex; align-items:center; gap:20px; min-height:64px; flex-wrap:wrap; }
+.brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--ink); }
+.brand b { font-family:var(--f-display); font-size:1.5rem; }
+.logo { width:26px; height:26px; border-radius:50%; border:4px solid var(--water); position:relative; flex:none; }
+.logo::after { content:""; position:absolute; inset:4px; border-radius:50%; background:var(--copper); }
+.nav nav { margin-left:auto; display:flex; gap:18px; flex-wrap:wrap; }
+.nav nav a { color:var(--muted); text-decoration:none; font-weight:600; font-size:.95rem; }
+.nav nav a[aria-current="page"] { color:var(--ink); }
+main { padding:48px 0 64px; }
+.eyebrow { font-family:var(--f-mono); font-size:.75rem; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+h1 { font-family:var(--f-display); font-size:clamp(2.2rem,6vw,3.2rem); line-height:1.05; margin:8px 0 6px; }
+h2 { font-family:var(--f-display); font-size:1.6rem; line-height:1.15; margin:36px 0 8px; }
+h3 { font-size:1.05rem; margin:20px 0 4px; }
+p, li { max-width:70ch; }
+ul { padding-left:22px; }
+li { margin:4px 0; }
+.meta { color:var(--muted); font-size:.95rem; }
+.card { background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:20px 22px; margin:20px 0; }
+.contact { font-family:var(--f-mono); font-size:1.05rem; user-select:all; }
+.toc { columns:2; column-gap:28px; padding-left:20px; }
+@media (max-width:640px) { .toc { columns:1; } }
+details { border-bottom:1px solid var(--line); padding:12px 0; }
+summary { cursor:pointer; font-weight:600; }
+details p, details ul { margin:8px 0 0; color:var(--muted); }
+.res { list-style:none; padding:0; margin:12px 0 0; display:grid; gap:10px; }
+.res li { background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:14px 18px; max-width:none; margin:0; }
+.res a { font-weight:600; }
+.res .kind { font-family:var(--f-mono); font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:1px 6px; margin-left:8px; white-space:nowrap; }
+.res p { margin:4px 0 0; color:var(--muted); font-size:.95rem; }
+.jump { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; padding:0; list-style:none; }
+.jump a { display:inline-block; border:1px solid var(--line); border-radius:999px; padding:4px 12px; text-decoration:none; font-weight:600; font-size:.9rem; background:var(--surface); }
+h2 { scroll-margin-top:16px; }
+footer { border-top:1px solid var(--line); padding:24px 0 calc(24px + env(safe-area-inset-bottom,0px)); color:var(--muted); font-size:.9rem; }
+footer .wrap { max-width:1140px; display:flex; flex-wrap:wrap; gap:8px 24px; justify-content:space-between; }
+footer a { color:var(--muted); }
+</style>
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="/" aria-label="LineTally home"><span class="logo" aria-hidden="true"></span><b>LineTally</b></a>
+  <nav aria-label="Site">
+    <a href="/">Home</a>
+    <a href="/resources/">Resources</a>
+    <a href="/support/">Support</a>
+    <a href="/privacy/" aria-current="page">Privacy</a>
+    <a href="/terms/">Terms</a>
+  </nav>
+</div></header>
+<main><div class="wrap">
+
+<div class="eyebrow">Legal</div>
+<h1>Privacy Policy</h1>
+<p class="meta">Effective November 27, 2026</p>
+
+<p>This policy explains what information LineTally collects, how it is used and shared, and the choices you have. LineTally is operated by SKC Software Solutions, LLC ("SKC", "we", "us"). It covers the LineTally app at <a href="https://app.linetally.com">app.linetally.com</a> and this website at <a href="https://linetally.com">linetally.com</a>.</p>
+
+<h2>Information we collect</h2>
+<h3>Account information</h3>
+<p>When you create an account we collect your name and email address, and your sign-in details are handled by our hosting provider. If you join or create a team, we record which team you belong to and whether you are its owner.</p>
+<h3>Information you add to LineTally</h3>
+<ul>
+  <li>Water system details: names, PWS IDs, states, populations served, field contacts and service-line inventory counts.</li>
+  <li>Service-line records, including <strong>service addresses</strong>, material, how it was identified, field notes, who verified it and when.</li>
+  <li><strong>Photos</strong> taken or uploaded during field visits.</li>
+  <li>Company details shown on reports: business name, address, phone, email, website, license number and logo.</li>
+  <li>Annual notice batches and assignment of field work to team members.</li>
+</ul>
+<p>Service addresses can relate to your customers or residents. You are responsible for having the right to enter that information, and we process it on your behalf to provide the service (see "Your customers' information" below).</p>
+<h3>Information stored on your device</h3>
+<p>To support field work without signal, the LineTally app stores your assigned visits and any visits recorded offline (including photos) in your browser's storage on that device until they upload. Signing out does not delete visits that are still waiting to upload; they are removed once uploaded or when you discard them.</p>
+<h3>Usage and technical information</h3>
+<p>Our hosting providers automatically receive standard technical information when you use the app or website, such as IP address, browser type, pages requested and timestamps. The app's hosting platform also records basic usage analytics (for example, which pages are opened) to operate and improve the service. LineTally does not use advertising cookies or trackers.</p>
+
+<h2>How we use information</h2>
+<ul>
+  <li>To provide LineTally: store and show your systems and records, sync between office and field devices, generate reports and exports, and run team features.</li>
+  <li>To keep the service secure, prevent misuse and fix problems.</li>
+  <li>To respond to support requests and send service messages about your account.</li>
+  <li>To understand how features are used so we can improve them.</li>
+</ul>
+<p>We do not sell your information, and we do not use it for advertising.</p>
+
+<h2>How information is shared</h2>
+<ul>
+  <li><strong>Your team.</strong> Records you create while on a team are visible to and editable by its members. Records on a personal account are visible only to you. A team's owner can see member names and emails and remove members.</li>
+  <li><strong>Service providers.</strong> We use Base44 to host the app, its database, sign-in and file storage; GitHub Pages to host this website; and Google Fonts to serve fonts, which means your browser requests font files from Google. These providers process information only to provide their services to us.</li>
+  <li><strong>Legal reasons.</strong> We may disclose information if required by law, or to protect the rights, safety or property of our users, the public or SKC.</li>
+  <li><strong>Business changes.</strong> If SKC is involved in a merger, acquisition or sale of assets, information may transfer as part of that transaction, subject to this policy.</li>
+</ul>
+
+<h2>Your customers' information</h2>
+<p>When an operator or utility enters service addresses or other information about its customers, that operator decides what is collected and why, and SKC processes it on the operator's behalf. Requests from residents about their information should go to the operator that serves them; we will help operators respond.</p>
+
+<h2>Security</h2>
+<p>Records are protected by access rules that limit them to your team or, on a personal account, to you. Team membership can only be changed through checked server actions. Field photos are stored as private files and opened through links that expire after ten minutes. No method of storage or transmission is completely secure, so we cannot guarantee absolute security.</p>
+
+<h2>Retention and deletion</h2>
+<p>We keep your information while your account is active. You can delete systems, service lines and example data in the app at any time. To delete your account or a team's data, email us at <span class="contact">support@linetally.com</span>. We delete or anonymize it within a reasonable time, except where we must keep it to meet legal obligations, resolve disputes or enforce agreements. Backups may hold copies for a limited period.</p>
+
+<h2>Your choices and rights</h2>
+<p>You can access and correct most information directly in the app. Depending on where you live, you may have rights to request access to, correction of, deletion of, or a copy of your personal information, or to object to certain processing. To make a request, email <span class="contact">support@linetally.com</span>. We will verify your request and respond as required by applicable law. We will not discriminate against you for exercising these rights.</p>
+
+<h2>Children</h2>
+<p>LineTally is a business tool and is not directed to children under 16. We do not knowingly collect information from them.</p>
+
+<h2>Changes to this policy</h2>
+<p>We may update this policy. We will post the new version here with a new effective date and, for significant changes, let account holders know in the app or by email.</p>
+
+<h2>Contact</h2>
+<div class="card">
+  <p><strong>SKC Software Solutions, LLC</strong><br>Email: <span class="contact">support@linetally.com</span></p>
+</div>
+</div></main>
+<footer><div class="wrap">
+  <span>© 2026 SKC Software Solutions · LineTally</span>
+  <span><a href="/resources/">Resources</a> · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="/support/">Support</a></span>
+</div></footer>
+</body>
+</html>
