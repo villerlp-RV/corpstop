@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { HeadContent, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
+import { reloadForNewVersion } from "@/lib/stale-build";
 import { DefaultCatchBoundary } from "@/components/DefaultCatchBoundary";
 import { NotFound } from "@/components/NotFound";
 import { Toaster } from "@/components/ui/sonner";
@@ -34,6 +36,14 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
+  // A page chunk from an older deploy is gone: reload to get the new version.
+  useEffect(() => {
+    const onPreloadError = (e) => {
+      if (reloadForNewVersion()) e.preventDefault();
+    };
+    window.addEventListener("vite:preloadError", onPreloadError);
+    return () => window.removeEventListener("vite:preloadError", onPreloadError);
+  }, []);
   return (
     <AuthProvider>
       <Outlet />
