@@ -356,3 +356,20 @@
 .lcri-app .filter-bar select.is-set { border-color: var(--water); background: color-mix(in srgb, var(--water) 8%, var(--surface)); }
 .lcri-app .filter-count { font-size: .85rem; white-space: nowrap; }
 @media (max-width: 600px) { .lcri-app .filter-bar select { flex: 1 1 45%; } }
+
+/* Compliance dashboard */
+.lcri-app .nowrap { white-space: nowrap; }
+.lcri-app .rollup { list-style: none; margin: 0; padding: 14px 16px; display: flex; flex-direction: column; gap: 14px; }
+.lcri-app .rollup li { display: flex; flex-direction: column; gap: 5px; }
+.lcri-app .rollup-h { display: flex; justify-content: space-between; gap: 10px; font-size: .92rem; }
+.lcri-app .rollup-bar { height: 8px; background: var(--sunk); border-radius: 4px; overflow: hidden; }
+.lcri-app .rollup-bar i { display: block; height: 100%; background: var(--good); }
+.lcri-app .act-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.lcri-app .act-kpis div { display: flex; flex-direction: column; }
+.lcri-app .act-kpis b { font-family: var(--f-display); font-size: 1.6rem; line-height: 1.1; }
+.lcri-app .act-kpis span { font-size: .78rem; color: var(--muted); }
+@media (max-width: 600px) { .lcri-app .act-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.lcri-app .mini-bar { position: relative; display: inline-block; width: 70px; height: 8px; background: var(--sunk); border-radius: 4px; margin-right: 8px; vertical-align: middle; }
+.lcri-app .mini-bar i { position: absolute; inset: 0 auto 0 0; background: var(--water); border-radius: 4px; }
+.lcri-app .mini-bar b { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); }
+.lcri-app .compliance .card-sub.note { margin: 0; max-width: none; }

@@ -112,6 +112,7 @@ export default function SystemDetail({ id }) {
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [scheduled, setScheduled] = useState("");
+  const [completed, setCompleted] = useState("");
   const [lineFilter, setLineFilter] = useState(EMPTY_LINE_FILTER);
   const setF = (k) => (v) => setLineFilter((f) => ({ ...f, [k]: v }));
 
@@ -132,6 +133,10 @@ export default function SystemDetail({ id }) {
   useEffect(() => {
     if (system) setScheduled(String(system.replacements_scheduled || 0));
   }, [system?.id, system?.replacements_scheduled]);
+
+  useEffect(() => {
+    if (system) setCompleted(String(system.replacements_completed || 0));
+  }, [system?.id, system?.replacements_completed]);
 
   if (loading) return <div className="spinner spinner--inline" aria-label="Loading" />;
   if (!system) {
@@ -171,6 +176,13 @@ export default function SystemDetail({ id }) {
     const n = Math.max(0, Math.min(replacementPool(system), parseInt(scheduled, 10) || 0));
     setScheduled(String(n));
     if (n !== sched) save({ replacements_scheduled: n }, "Scheduled replacements saved");
+  };
+
+  // Completed replacements leave the pool, so move them out of the lead and GRR counts separately (Edit the system).
+  const saveCompleted = () => {
+    const n = Math.max(0, Math.min(99999, parseInt(completed, 10) || 0));
+    setCompleted(String(n));
+    if (n !== (system.replacements_completed || 0)) save({ replacements_completed: n }, "Completed replacements saved");
   };
 
   const verifyLine = async (line, material, method, materialType) => {
@@ -326,6 +338,8 @@ export default function SystemDetail({ id }) {
           <span className="inline-form">
             <label htmlFor="scheduled">Scheduled</label>
             <input id="scheduled" type="number" disabled={!can.edit} min="0" className="num-input" value={scheduled} onChange={(e) => setScheduled(e.target.value)} onBlur={saveScheduled} onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()} />
+            <label htmlFor="completed">Completed</label>
+            <input id="completed" type="number" disabled={!can.edit} min="0" className="num-input" value={completed} onChange={(e) => setCompleted(e.target.value)} onBlur={saveCompleted} onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()} />
           </span>
         </div>
         <div className="pace-track" role="progressbar" aria-valuemin={0} aria-valuemax={target} aria-valuenow={Math.min(sched, target)} aria-label="Scheduled against year-1 target">
