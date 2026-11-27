@@ -294,3 +294,5 @@
 .lcri-app .lh-sys { font-family: var(--f-display); font-size: 1.4rem; }
 .lcri-app .foot { display: flex; flex-wrap: wrap; gap: 6px 24px; justify-content: space-between; }
 .lcri-app .foot-brand { font-weight: 600; white-space: nowrap; }
+.lcri-app .foot-brand { white-space: normal; }
+.lcri-app .foot-brand a { color: var(--muted); }
