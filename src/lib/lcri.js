@@ -201,6 +201,9 @@ export function exampleLines(sys, systemId, perSystem = 10) {
       address: `${100 + ((h >>> 8) % 880)} ${STREETS[(h >>> 4) % STREETS.length]}`,
       material,
       identification_method: material === "unknown" ? "" : METHODS[(h >>> 3) % METHODS.length],
+      // Connector and specific non-lead material, as a field visit would record them.
+      ...(material === "unknown" ? {} : { connector: material === "lead" ? "lead" : ["none", "non_lead", "none", "lead"][(h >>> 5) % 4] }),
+      ...(material === "non_lead" ? { material_type: ["copper", "plastic", "copper", "iron"][(h >>> 6) % 4] } : {}),
       is_example: true,
     });
   }

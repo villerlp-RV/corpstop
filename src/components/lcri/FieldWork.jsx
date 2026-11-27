@@ -5,14 +5,15 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { unwrap, useData } from "@/lib/DataContext";
 import { notify } from "@/components/lcri/notify";
-import { Swatch } from "@/components/lcri/bits";
+import { MaterialCell, NonLeadTypeSelect } from "@/components/lcri/pipe-bits";
+import { CONNECTORS, materialText } from "@/lib/pipes";
 import { AssignmentCell, PhotoGallery } from "@/components/lcri/field-bits";
 import { PhotoPicker } from "@/components/lcri/Camera";
 import { useOffline } from "@/lib/OfflineQueue";
 import { cacheStore } from "@/lib/offline-store";
 import { hideQueued, queuedVisit } from "@/lib/offline";
 import { FIELD_MATERIALS, MAX_PHOTOS_PER_ENTRY, fieldRecordPatch, groupBySystem, photosOf, workloadByMember } from "@/lib/fieldwork";
-import { ID_METHODS, materialOf } from "@/lib/lcri";
+import { ID_METHODS, MATERIALS, materialOf } from "@/lib/lcri";
 
 function timeAgo(iso) {
   if (!iso) return "";
@@ -30,19 +31,33 @@ function RecordForm({ line, onSaved, onCancel }) {
   const { user } = useAuth();
   const { enqueue } = useOffline();
   const [material, setMaterial] = useState("");
+  const [split, setSplit] = useState(false);
+  const [systemSide, setSystemSide] = useState("");
+  const [customerSide, setCustomerSide] = useState("");
+  const [type, setType] = useState("");
+  const [connector, setConnector] = useState(null);
   const [method, setMethod] = useState(ID_METHODS[0]);
   const [notes, setNotes] = useState("");
   const [photos, setPhotos] = useState([]);
   const [saving, setSaving] = useState(false);
+  const hasNonLead = split ? [systemSide, customerSide].includes("non_lead") : material === "non_lead";
 
   const save = async (e) => {
     e.preventDefault();
-    const check = fieldRecordPatch(line, { material, method, notes }, user);
+    const input = {
+      method,
+      notes,
+      ...(split ? { ownership: "split", system_side: systemSide, customer_side: customerSide } : { material }),
+      ...(type && hasNonLead ? { material_type: type } : {}),
+      ...(connector ? { connector } : {}),
+    };
+    const check = fieldRecordPatch(line, input, user);
     if (check.error) return notify(check.error, "error");
+    input.material = check.patch.material;
     setSaving(true);
     try {
-      const outcome = await enqueue(queuedVisit({ line, input: { material, method, notes }, photos, user }));
-      if (outcome === "saved") notify(`${line.address} recorded as ${materialOf(material).label}`);
+      const outcome = await enqueue(queuedVisit({ line, input, photos, user }));
+      if (outcome === "saved") notify(`${line.address} recorded as ${materialText(check.patch)}`);
       else if (outcome === "queued") notify(`Saved on this phone. ${line.address} uploads when you have signal.`);
       else notify(`${line.address} couldn't be saved. See "Waiting to upload".`, "error");
       onSaved();
@@ -52,18 +67,42 @@ function RecordForm({ line, onSaved, onCancel }) {
     }
   };
 
+  const chips = (name, legend, options, value, onPick, cls = "choice") => (
+    <fieldset className={cls}>
+      <legend>{legend}</legend>
+      {options.map((m) => (
+        <label key={m.value} className={value === m.value ? "on" : undefined}>
+          <input type="radio" name={`${name}-${line.id}`} value={m.value} checked={value === m.value} onChange={() => onPick(m.value)} />
+          {m.cls && <i className={m.cls} aria-hidden="true" />}
+          {m.label}
+        </label>
+      ))}
+    </fieldset>
+  );
+  const fieldOpts = FIELD_MATERIALS.map(materialOf);
+  const ready = split ? systemSide && customerSide : material;
+
   return (
     <form className="record" onSubmit={save}>
-      <fieldset className="choice">
-        <legend>Material found</legend>
-        {FIELD_MATERIALS.map((m) => (
-          <label key={m} className={material === m ? "on" : undefined}>
-            <input type="radio" name={`mat-${line.id}`} value={m} checked={material === m} onChange={() => setMaterial(m)} />
-            <i className={materialOf(m).cls} aria-hidden="true" />
-            {materialOf(m).label}
-          </label>
-        ))}
-      </fieldset>
+      {split ? (
+        <>
+          {chips("sys", "System side (main to curb stop)", MATERIALS, systemSide, setSystemSide, "choice choice--4")}
+          {chips("cus", "Customer side (curb stop to building)", MATERIALS, customerSide, setCustomerSide, "choice choice--4")}
+        </>
+      ) : (
+        chips("mat", "Material found", fieldOpts, material, setMaterial)
+      )}
+      <label className="check">
+        <input type="checkbox" checked={split} onChange={(e) => setSplit(e.target.checked)} />
+        Different material on the system side and the customer side
+      </label>
+      {hasNonLead && (
+        <div className="field">
+          <label htmlFor={`type-${line.id}`}>Non-lead material <span className="muted">(optional)</span></label>
+          <NonLeadTypeSelect id={`type-${line.id}`} value={type} onChange={setType} />
+        </div>
+      )}
+      {chips("con", "Connector (gooseneck or pigtail)", CONNECTORS, connector, setConnector, "choice choice--4")}
       <div className="field">
         <label htmlFor={`method-${line.id}`}>How you identified it</label>
         <select id={`method-${line.id}`} value={method} onChange={(e) => setMethod(e.target.value)}>
@@ -80,7 +119,7 @@ function RecordForm({ line, onSaved, onCancel }) {
       </div>
       <div className="record-actions">
         <button type="button" className="btn btn--big" onClick={onCancel} disabled={saving}>Cancel</button>
-        <button type="submit" className="btn btn--big btn--primary" disabled={!material || saving}>
+        <button type="submit" className="btn btn--big btn--primary" disabled={!ready || saving}>
           {saving ? "Saving…" : "Save visit"}
         </button>
       </div>
@@ -210,7 +249,7 @@ function MyWork() {
                     <div>
                       <b>{l.address}</b>
                       <small className="muted block">
-                        On file: {materialOf(l.material).label}
+                        On file: {materialText(l)}
                         {l.assigned_by_name ? ` · from ${l.assigned_by_name}` : ""}
                       </small>
                     </div>
@@ -241,7 +280,7 @@ function MyWork() {
             {done.map((l) => (
               <li key={l.id}>
                 <span>{l.address}</span>
-                <Swatch material={l.material} />
+                <span><MaterialCell line={l} /></span>
                 <span className="muted">{timeAgo(l.completed_at)}</span>
                 <PhotoGallery uris={photosOf(l)} />
               </li>
@@ -309,7 +348,7 @@ function Everyone() {
                 <tr key={l.id}>
                   <td>{l.address}</td>
                   <td>{sysName(l.system_id)}</td>
-                  <td><Swatch material={l.material} /><small className="muted block">{l.identification_method}</small></td>
+                  <td><MaterialCell line={l} /><small className="muted block">{[l.identification_method, l.connector === "lead" ? "lead connector" : ""].filter(Boolean).join(" · ")}</small></td>
                   <td><AssignmentCell line={l} /> <PhotoGallery uris={photosOf(l)} title={`Photos · ${l.address}`} /></td>
                   <td className="n">{timeAgo(l.completed_at)}</td>
                 </tr>

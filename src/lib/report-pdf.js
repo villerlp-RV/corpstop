@@ -236,9 +236,10 @@ export async function renderReportPdf(report) {
     heading("Service lines");
     table(report.lines);
     font(9, "normal", MUTED);
-    ensure(16);
-    doc.text(report.lines.note, M, y);
-    y += 22;
+    const noteLines = doc.splitTextToSize(report.lines.note, CW);
+    ensure(12 * noteLines.length + 4);
+    doc.text(noteLines, M, y);
+    y += 12 * noteLines.length + 10;
     if (report.notes.length) {
       heading("Field notes");
       for (const [addr, note] of report.notes) {

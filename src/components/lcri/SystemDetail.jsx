@@ -5,10 +5,12 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { linesFor, useData } from "@/lib/DataContext";
 import { notify } from "@/components/lcri/notify";
-import { MaterialBar, Modal, ReadinessPill, Swatch } from "@/components/lcri/bits";
+import { MaterialBar, Modal, ReadinessPill } from "@/components/lcri/bits";
 import SystemForm from "@/components/lcri/SystemForm";
 import ReportButton from "@/components/lcri/ReportButton";
 import ImportLines from "@/components/lcri/ImportLines";
+import { ConnectorCell, LineDetails, MaterialCell, NonLeadTypeSelect } from "@/components/lcri/pipe-bits";
+import { connectorSummary } from "@/lib/pipes";
 import { replacementPlan, systemReport } from "@/lib/report";
 import { AddLinePhotos, AssignmentCell, PhotoGallery } from "@/components/lcri/field-bits";
 import { useMembers } from "@/components/lcri/useMembers";
@@ -21,11 +23,12 @@ import {
 function VerifyControls({ line, onSave }) {
   const [material, setMaterial] = useState("");
   const [method, setMethod] = useState(ID_METHODS[0]);
+  const [type, setType] = useState("");
   const [saving, setSaving] = useState(false);
   const save = async () => {
     setSaving(true);
     try {
-      await onSave(line, material, method);
+      await onSave(line, material, method, material === "non_lead" ? type : "");
     } finally {
       setSaving(false);
     }
@@ -38,6 +41,7 @@ function VerifyControls({ line, onSave }) {
           <option key={m.value} value={m.value}>{m.label}</option>
         ))}
       </select>
+      {material === "non_lead" && <NonLeadTypeSelect id={`type-${line.id}`} value={type} onChange={setType} />}
       <select id={`meth-${line.id}`} aria-label="How it was identified" value={method} onChange={(e) => setMethod(e.target.value)}>
         {ID_METHODS.map((m) => <option key={m}>{m}</option>)}
       </select>
@@ -52,16 +56,23 @@ function AddLineForm({ onAdd }) {
   const [address, setAddress] = useState("");
   const [material, setMaterial] = useState("unknown");
   const [method, setMethod] = useState("");
+  const [type, setType] = useState("");
   const [saving, setSaving] = useState(false);
   const submit = async (e) => {
     e.preventDefault();
     if (!address.trim()) return;
     setSaving(true);
     try {
-      await onAdd({ address: address.trim(), material, identification_method: material === "unknown" ? "" : method || ID_METHODS[0] });
+      await onAdd({
+        address: address.trim(),
+        material,
+        ...(material === "non_lead" && type ? { material_type: type } : {}),
+        identification_method: material === "unknown" ? "" : method || ID_METHODS[0],
+      });
       setAddress("");
       setMaterial("unknown");
       setMethod("");
+      setType("");
     } finally {
       setSaving(false);
     }
@@ -72,6 +83,7 @@ function AddLineForm({ onAdd }) {
       <select id="new-line-material" aria-label="Material" value={material} onChange={(e) => setMaterial(e.target.value)}>
         {MATERIALS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
       </select>
+      {material === "non_lead" && <NonLeadTypeSelect id="new-line-type" value={type} onChange={setType} />}
       {material !== "unknown" && (
         <select id="new-line-method" aria-label="How it was identified" value={method || ID_METHODS[0]} onChange={(e) => setMethod(e.target.value)}>
           {ID_METHODS.map((m) => <option key={m}>{m}</option>)}
@@ -147,10 +159,11 @@ export default function SystemDetail({ id }) {
     if (n !== sched) save({ replacements_scheduled: n }, "Scheduled replacements saved");
   };
 
-  const verifyLine = async (line, material, method) => {
+  const verifyLine = async (line, material, method, materialType) => {
     try {
       await base44.entities.ServiceLine.update(line.id, {
         material,
+        material_type: materialType || null,
         identification_method: method,
         verified_date: todayIso(),
         verified_by: user?.full_name || user?.email || "",
@@ -251,6 +264,9 @@ export default function SystemDetail({ id }) {
               </div>
             ))}
           </div>
+          <p className="note con-sum">
+            <b>Connectors on file:</b> {lines ? connectorSummary(lines) : "…"}
+          </p>
         </section>
 
         <section className="card pad" aria-labelledby="ready-h">
@@ -342,7 +358,7 @@ export default function SystemDetail({ id }) {
             <thead>
               <tr>
                 {can.edit && <th className="sel"><span className="sr-only">Select</span></th>}
-                <th>Address</th><th>Material</th><th>How identified</th><th>Field visit</th><th>Photos</th><th>Record here</th>
+                <th>Address</th><th>Material</th><th>Connector</th><th>How identified</th><th>Field visit</th><th>Photos</th><th>Record here</th>
               </tr>
             </thead>
             <tbody>
@@ -354,7 +370,8 @@ export default function SystemDetail({ id }) {
                     </td>
                   )}
                   <td>{l.address}{l.is_example && <span className="tag">Example</span>}</td>
-                  <td><Swatch material={l.material} /></td>
+                  <td><MaterialCell line={l} /><LineDetails line={l} system={system} canEdit={can.edit} onSaved={loadLines} updateSystem={updateSystem} user={user} /></td>
+                  <td><ConnectorCell line={l} /></td>
                   <td>{l.identification_method || "—"}{l.verified_by ? <small className="muted block">{l.verified_by}</small> : null}</td>
                   <td><AssignmentCell line={l} /></td>
                   <td><span className="photo-cell"><PhotoGallery uris={photosOf(l)} title={`Photos · ${l.address}`} lineId={l.id} canRemove={can.admin} onChanged={loadLines} />{can.edit && <AddLinePhotos line={l} onSaved={loadLines} />}</span></td>
@@ -362,7 +379,7 @@ export default function SystemDetail({ id }) {
                 </tr>
               ))}
               {lines && lines.length === 0 && (
-                <tr><td colSpan={can.edit ? 7 : 6} className="muted">No individual lines on file yet. Add lines as you visit them in the field.</td></tr>
+                <tr><td colSpan={can.edit ? 8 : 7} className="muted">No individual lines on file yet. Add lines as you visit them in the field.</td></tr>
               )}
             </tbody>
           </table>

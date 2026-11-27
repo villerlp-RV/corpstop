@@ -70,6 +70,35 @@
       "default": "unknown",
       "title": "Material"
     },
+    "material_type": {
+      "type": "string",
+      "enum": ["copper", "plastic", "galvanized", "iron", "brass", "other"],
+      "title": "Non-lead Material",
+      "description": "Specific material of a non-lead line or portion (40 CFR 141.84(a)(3)(iii) allows it in place of Non-Lead). galvanized = galvanized never downstream of lead."
+    },
+    "ownership": {
+      "type": "string",
+      "enum": ["single", "split"],
+      "default": "single",
+      "title": "Ownership",
+      "description": "split when the system and the customer each own a portion; each portion is then categorized (141.84(a)(3))."
+    },
+    "system_side": {
+      "type": "string",
+      "enum": ["lead", "grr", "unknown", "non_lead"],
+      "title": "System-side Material"
+    },
+    "customer_side": {
+      "type": "string",
+      "enum": ["lead", "grr", "unknown", "non_lead"],
+      "title": "Customer-side Material"
+    },
+    "connector": {
+      "type": "string",
+      "enum": ["lead", "non_lead", "unknown", "none"],
+      "title": "Connector",
+      "description": "Lead connector (gooseneck, pigtail) category per 141.84(a)(2)(ii); none = no connector present."
+    },
     "identification_method": {
       "type": "string",
       "title": "How Identified",

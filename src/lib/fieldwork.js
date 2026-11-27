@@ -1,6 +1,8 @@
 // Field assignments: office staff assign service lines to a team member, who
 // records what they find from a phone. Pure functions, unit-tested.
 
+import { lineFields } from "./pipes.js";
+
 export const FIELD_MATERIALS = ["lead", "grr", "non_lead"];
 export const MAX_PHOTOS_PER_ENTRY = 5;
 const MAX_PHOTOS_PER_LINE = 30;
@@ -39,13 +41,22 @@ export const isOpen = (line) => line.assignment_status === "open" && !!line.assi
 
 // The line update for a field visit. Returns { patch } or { error }.
 export function fieldRecordPatch(line, input, user, now = new Date()) {
-  if (!FIELD_MATERIALS.includes(input.material)) return { error: "Choose the material you found." };
+  const split = input.ownership === "split";
+  if (!split && !FIELD_MATERIALS.includes(input.material)) return { error: "Choose the material you found." };
+  const detail = lineFields(input);
+  if (detail.error) return detail;
+  if (split && detail.fields.system_side === "unknown" && detail.fields.customer_side === "unknown") {
+    return { error: "Record what you found on at least one side." };
+  }
   if (!input.method) return { error: "Choose how you identified it." };
+  // A visit that didn't look at the connector leaves what the office recorded.
+  const { connector, ...fields } = detail.fields;
   const notes = String(input.notes || "").trim().slice(0, 1000);
   const p = (n) => String(n).padStart(2, "0");
   return {
     patch: {
-      material: input.material,
+      ...fields,
+      ...(input.connector !== undefined ? { connector } : {}),
       identification_method: input.method,
       verified_date: `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`,
       verified_by: user?.full_name || user?.email || "",

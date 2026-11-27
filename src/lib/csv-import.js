@@ -1,11 +1,14 @@
 // Import service-line addresses from a CSV (a billing export, a GIS export or a
 // spreadsheet saved as CSV). Pure functions so they can be tested in Node.
 
+import { combineSides } from "./pipes.js";
+
 export const MAX_IMPORT_ROWS = 5000;
-export const IMPORT_TEMPLATE = "address,material,identification_method\n" +
-  "12 Oak St,unknown,\n" +
-  "14 Oak St,non_lead,Tap card\n" +
-  "16 Oak St,lead,Potholing\n";
+export const IMPORT_TEMPLATE = "address,material,identification_method,connector,system_side_material,customer_side_material\n" +
+  "12 Oak St,unknown,,,,\n" +
+  "14 Oak St,copper,Tap card,none,,\n" +
+  "16 Oak St,lead,Potholing,lead,,\n" +
+  "18 Oak St,,Potholing,non_lead,copper,galvanized requiring replacement\n";
 
 // RFC 4180 style: quoted fields, doubled quotes, CRLF, and a delimiter picked
 // from the first line (comma, semicolon or tab).
@@ -57,6 +60,9 @@ const HEADERS = {
   street: ["street", "street name", "road"],
   unit: ["unit", "apt", "apartment", "suite"],
   material: ["material", "line material", "service line material", "material classification", "classification", "pipe material", "lead status", "status"],
+  connector: ["connector", "connector material", "lead connector", "gooseneck", "pigtail", "gooseneck pigtail", "connector status"],
+  systemSide: ["system side material", "system side", "system owned material", "system owned portion", "utility side material", "utility side", "public side material", "public side"],
+  customerSide: ["customer side material", "customer side", "customer owned material", "customer owned portion", "private side material", "private side"],
   method: ["identification method", "how identified", "method", "identified by", "verification method", "source"],
 };
 
@@ -72,6 +78,28 @@ function findColumns(header) {
   return Object.fromEntries(Object.entries(HEADERS).map(([k, names]) => [k, pick(names)]));
 }
 
+// Specific non-lead materials (kept alongside the Non-lead category).
+export function nonLeadTypeFrom(value) {
+  const v = norm(value);
+  if (/^(copper|cu)$/.test(v)) return "copper";
+  if (/^(plastic|pvc|pe|hdpe|pex|polyethylene|polybutylene|cpvc)$/.test(v)) return "plastic";
+  if (/^(galvanized not grr|galvanized non grr|galvanized never downstream of lead|non grr galvanized)$/.test(v)) return "galvanized";
+  if (/^(ductile iron|di|cast iron|ci|iron)$/.test(v)) return "iron";
+  if (/^(brass|bronze)$/.test(v)) return "brass";
+  if (/^(steel|other non lead)$/.test(v)) return "other";
+  return null;
+}
+
+export function connectorFrom(value) {
+  const v = norm(value);
+  if (!v) return null;
+  if (/^(none|no connector|no connector present|not present|n a|na|no)$/.test(v)) return "none";
+  if (/^(lead|l|pb|lead connector|lead gooseneck|lead pigtail|yes)$/.test(v)) return "lead";
+  if (/^(unknown|unk|u|tbd)$/.test(v)) return "unknown";
+  if (/^(non lead|nonlead|nl|not lead|copper|cu|galvanized|galv|brass|plastic|iron)$/.test(v)) return "non_lead";
+  return undefined;
+}
+
 // Spellings seen in utility inventories, mapped to LineTally materials.
 export function materialFrom(value) {
   const v = norm(value);
@@ -79,7 +107,7 @@ export function materialFrom(value) {
   if (/^(unknown|unk|u|lead status unknown|unknown material|tbd|not known)$/.test(v)) return "unknown";
   if (/^(grr|galvanized|galv|galvanised|g|galvanized requiring replacement|galvanized requiring replacement grr)$/.test(v)) return "grr";
   if (/^(lead|l|pb|lead service line|lsl)$/.test(v)) return "lead";
-  if (/^(non lead|nonlead|non_lead|nl|not lead|copper|cu|plastic|pvc|pe|hdpe|pex|polyethylene|polybutylene|ductile iron|di|cast iron|ci|iron|brass|steel)$/.test(v)) return "non_lead";
+  if (/^(non lead|nonlead|non_lead|nl|not lead|other non lead)$/.test(v) || nonLeadTypeFrom(v)) return "non_lead";
   return null;
 }
 
@@ -94,7 +122,7 @@ export function planImport(text, existing = []) {
   const hasAddress = cols.address >= 0 || cols.street >= 0;
   if (!hasAddress) {
     // No recognisable header: use the first column, and keep the first row unless it reads like a header.
-    cols = { address: 0, number: -1, street: -1, unit: -1, material: rows[0].length > 1 ? 1 : -1, method: rows[0].length > 2 ? 2 : -1 };
+    cols = { address: 0, number: -1, street: -1, unit: -1, material: rows[0].length > 1 ? 1 : -1, method: rows[0].length > 2 ? 2 : -1, connector: -1, systemSide: -1, customerSide: -1 };
     const looksLikeHeader = !/\d/.test(rows[0][0]);
     body = looksLikeHeader ? rows.slice(1) : rows;
     firstRow = looksLikeHeader ? 2 : 1;
@@ -116,17 +144,31 @@ export function planImport(text, existing = []) {
     const key = addressKey(address);
     if (seen.has(key)) return result.skipped.push({ row: rowNo, address, reason: "Already on file or repeated" });
     seen.add(key);
-    let material = materialFrom(cell("material"));
-    if (material === null) {
-      result.warnings.push({ row: rowNo, address, reason: `Material "${cell("material")}" not recognised, set to Unknown` });
-      material = "unknown";
+    const warn = (reason) => result.warnings.push({ row: rowNo, address, reason });
+    const readMaterial = (k, label) => {
+      const m = materialFrom(cell(k));
+      if (m === null) warn(`${label} "${cell(k)}" not recognised, set to Unknown`);
+      return m ?? "unknown";
+    };
+    const split = !!(cell("systemSide") || cell("customerSide"));
+    const line = { address };
+    if (split) {
+      line.ownership = "split";
+      line.system_side = readMaterial("systemSide", "System-side material");
+      line.customer_side = readMaterial("customerSide", "Customer-side material");
+      line.material = combineSides(line.system_side, line.customer_side);
+      line.material_type = nonLeadTypeFrom(cell("systemSide")) || nonLeadTypeFrom(cell("customerSide")) || null;
+    } else {
+      line.material = readMaterial("material", "Material");
+      line.material_type = line.material === "non_lead" ? nonLeadTypeFrom(cell("material")) : null;
     }
+    if (!line.material_type) delete line.material_type;
+    const connector = connectorFrom(cell("connector"));
+    if (connector === undefined) warn(`Connector "${cell("connector")}" not recognised, left blank`);
+    else if (connector) line.connector = connector;
     const method = cell("method").slice(0, 80);
-    result.lines.push({
-      address,
-      material,
-      identification_method: material === "unknown" ? "" : method || "Records review",
-    });
+    line.identification_method = line.material === "unknown" && !split ? "" : method || "Records review";
+    result.lines.push(line);
   });
   return result;
 }
