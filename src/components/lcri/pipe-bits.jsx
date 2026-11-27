@@ -5,6 +5,7 @@ import { Modal, Swatch } from "@/components/lcri/bits";
 import { notify } from "@/components/lcri/notify";
 import { CONNECTORS, NON_LEAD_TYPES, connectorText, isSplit, lineFields, materialDetail } from "@/lib/pipes";
 import { ID_METHODS, MATERIALS, countsAfterChange, todayIso } from "@/lib/lcri";
+import { isEmail } from "@/lib/email";
 
 // Optional specific material for a non-lead line.
 export function NonLeadTypeSelect({ id, value, onChange, label = "Non-lead material" }) {
@@ -50,6 +51,8 @@ export function LineDetails({ line, system, canEdit, onSaved, updateSystem, user
       material_type: line.material_type || "",
       connector: line.connector || "",
       method: line.identification_method || "",
+      customer_name: line.customer_name || "",
+      customer_email: line.customer_email || "",
     });
     setOpen(true);
   };
@@ -60,12 +63,16 @@ export function LineDetails({ line, system, canEdit, onSaved, updateSystem, user
   const save = async (e) => {
     e.preventDefault();
     if (preview.error) return notify(preview.error, "error");
+    const email = form.customer_email.trim().toLowerCase();
+    if (email && !isEmail(email)) return notify(`"${form.customer_email}" isn't a valid email address.`, "error");
     const fields = preview.fields;
     const known = fields.material !== "unknown" || fields.ownership === "split";
     setSaving(true);
     try {
       await base44.entities.ServiceLine.update(line.id, {
         ...fields,
+        customer_name: form.customer_name.trim().slice(0, 120) || null,
+        customer_email: email || null,
         identification_method: known ? form.method || ID_METHODS[ID_METHODS.length - 1] : form.method || "",
         ...(fields.material !== line.material && fields.material !== "unknown" ? { verified_date: todayIso(), verified_by: user?.full_name || user?.email || "" } : {}),
       });
@@ -118,6 +125,16 @@ export function LineDetails({ line, system, canEdit, onSaved, updateSystem, user
               <div className="field">
                 <label htmlFor="ld-con">Connector (gooseneck or pigtail)</label>
                 {pick(CONNECTORS, "ld-con", form.connector, set("connector"), "Not recorded")}
+              </div>
+              <div className="two">
+                <div className="field">
+                  <label htmlFor="ld-cname">Customer name <span className="muted">(optional)</span></label>
+                  <input id="ld-cname" value={form.customer_name} maxLength={120} onChange={(e) => set("customer_name")(e.target.value)} />
+                </div>
+                <div className="field">
+                  <label htmlFor="ld-cemail">Customer email <span className="muted">(for emailed notices)</span></label>
+                  <input id="ld-cemail" type="email" value={form.customer_email} maxLength={200} onChange={(e) => set("customer_email")(e.target.value)} />
+                </div>
               </div>
               <div className="field">
                 <label htmlFor="ld-meth">How identified</label>

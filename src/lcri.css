@@ -373,3 +373,29 @@
 .lcri-app .mini-bar i { position: absolute; inset: 0 auto 0 0; background: var(--water); border-radius: 4px; }
 .lcri-app .mini-bar b { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); }
 .lcri-app .compliance .card-sub.note { margin: 0; max-width: none; }
+
+/* Bulk email */
+.lcri-app .tabs-inline { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.lcri-app .tabs-inline button { text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; font: inherit; color: var(--ink); }
+.lcri-app .tabs-inline button span { font-size: .8rem; color: var(--muted); }
+.lcri-app .tabs-inline button.on { border-color: var(--water); background: color-mix(in srgb, var(--water) 8%, var(--surface)); box-shadow: inset 0 -2px 0 var(--water); }
+@media (max-width: 700px) { .lcri-app .tabs-inline { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.lcri-app .email .card.pad { display: flex; flex-direction: column; gap: 14px; }
+.lcri-app .email .card.pad > p { margin: 0; }
+.lcri-app .alert--info { display: flex; gap: 8px; align-items: flex-start; background: color-mix(in srgb, var(--warn) 10%, var(--surface)); border-color: color-mix(in srgb, var(--warn) 40%, var(--line)); color: var(--ink); }
+.lcri-app .send-row { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; padding: 12px; background: var(--sunk); border-radius: 6px; }
+.lcri-app .send-progress { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.lcri-app .send-progress--warn { border-color: var(--warn); }
+.lcri-app .send-bar { height: 6px; background: var(--sunk); border-radius: 3px; overflow: hidden; }
+.lcri-app .send-bar i { display: block; height: 100%; background: var(--water); transition: width .2s; }
+.lcri-app .send-line { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.lcri-app .email-preview { border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.lcri-app .email-meta { padding: 10px 12px; background: var(--sunk); font-size: .9rem; display: flex; flex-direction: column; gap: 2px; overflow-wrap: anywhere; }
+.lcri-app .email-meta .muted { display: inline-block; width: 64px; }
+.lcri-app .email-preview iframe { width: 100%; height: 520px; border: 0; background: #f2f5f7; display: block; }
+.lcri-app .contact-input { width: 100%; min-width: 220px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); font: inherit; }
+.lcri-app .check-row { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.lcri-app .state-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.lcri-app .state-form .grow { flex: 1 1 260px; }
+.lcri-app .state-form select, .lcri-app .state-form input { padding: 7px 9px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); font: inherit; width: 100%; }
+.lcri-app .error-text { color: var(--crit); }

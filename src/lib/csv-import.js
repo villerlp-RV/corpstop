@@ -2,13 +2,14 @@
 // spreadsheet saved as CSV). Pure functions so they can be tested in Node.
 
 import { combineSides } from "./pipes.js";
+import { isEmail } from "./email.js";
 
 export const MAX_IMPORT_ROWS = 5000;
-export const IMPORT_TEMPLATE = "address,material,identification_method,connector,system_side_material,customer_side_material\n" +
-  "12 Oak St,unknown,,,,\n" +
-  "14 Oak St,copper,Tap card,none,,\n" +
-  "16 Oak St,lead,Potholing,lead,,\n" +
-  "18 Oak St,,Potholing,non_lead,copper,galvanized requiring replacement\n";
+export const IMPORT_TEMPLATE = "address,material,identification_method,connector,system_side_material,customer_side_material,customer_name,customer_email\n" +
+  "12 Oak St,unknown,,,,,Ann Lee,ann.lee@example.com\n" +
+  "14 Oak St,copper,Tap card,none,,,,\n" +
+  "16 Oak St,lead,Potholing,lead,,,Raj Patel,raj@example.com\n" +
+  "18 Oak St,,Potholing,non_lead,copper,galvanized requiring replacement,,\n";
 
 // RFC 4180 style: quoted fields, doubled quotes, CRLF, and a delimiter picked
 // from the first line (comma, semicolon or tab).
@@ -60,6 +61,8 @@ const HEADERS = {
   street: ["street", "street name", "road"],
   unit: ["unit", "apt", "apartment", "suite"],
   material: ["material", "line material", "service line material", "material classification", "classification", "pipe material", "lead status", "status"],
+  customerEmail: ["customer email", "email", "email address", "e mail", "customer e mail", "owner email", "account email"],
+  customerName: ["customer name", "customer", "account name", "owner name", "resident", "occupant"],
   connector: ["connector", "connector material", "lead connector", "gooseneck", "pigtail", "gooseneck pigtail", "connector status"],
   systemSide: ["system side material", "system side", "system owned material", "system owned portion", "utility side material", "utility side", "public side material", "public side"],
   customerSide: ["customer side material", "customer side", "customer owned material", "customer owned portion", "private side material", "private side"],
@@ -122,7 +125,7 @@ export function planImport(text, existing = []) {
   const hasAddress = cols.address >= 0 || cols.street >= 0;
   if (!hasAddress) {
     // No recognisable header: use the first column, and keep the first row unless it reads like a header.
-    cols = { address: 0, number: -1, street: -1, unit: -1, material: rows[0].length > 1 ? 1 : -1, method: rows[0].length > 2 ? 2 : -1, connector: -1, systemSide: -1, customerSide: -1 };
+    cols = { address: 0, number: -1, street: -1, unit: -1, material: rows[0].length > 1 ? 1 : -1, method: rows[0].length > 2 ? 2 : -1, connector: -1, systemSide: -1, customerSide: -1, customerEmail: -1, customerName: -1 };
     const looksLikeHeader = !/\d/.test(rows[0][0]);
     body = looksLikeHeader ? rows.slice(1) : rows;
     firstRow = looksLikeHeader ? 2 : 1;
@@ -166,6 +169,10 @@ export function planImport(text, existing = []) {
     const connector = connectorFrom(cell("connector"));
     if (connector === undefined) warn(`Connector "${cell("connector")}" not recognised, left blank`);
     else if (connector) line.connector = connector;
+    const email = cell("customerEmail").trim().toLowerCase();
+    if (email && isEmail(email)) line.customer_email = email;
+    else if (email) warn(`Email "${cell("customerEmail")}" not valid, left blank`);
+    if (cell("customerName")) line.customer_name = cell("customerName").slice(0, 120);
     const method = cell("method").slice(0, 80);
     line.identification_method = line.material === "unknown" && !split ? "" : method || "Records review";
     result.lines.push(line);

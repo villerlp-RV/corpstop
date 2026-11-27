@@ -36,6 +36,31 @@
         }
       }
     },
+    "client_emails": {
+      "type": "string",
+      "title": "Client Contacts",
+      "description": "Email addresses of the system's owner, board or manager, separated by commas. Reports are emailed here.",
+      "maxLength": 1000,
+      "rls": {
+        "update": {
+          "$or": [
+            {
+              "data.team_id": null
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            },
+            {
+              "user_condition": {
+                "data.perm_edit": true
+              }
+            }
+          ]
+        }
+      }
+    },
     "state": {
       "type": "string",
       "title": "State",
