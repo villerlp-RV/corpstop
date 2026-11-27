@@ -44,6 +44,14 @@ li { margin:4px 0; }
 details { border-bottom:1px solid var(--line); padding:12px 0; }
 summary { cursor:pointer; font-weight:600; }
 details p, details ul { margin:8px 0 0; color:var(--muted); }
+.res { list-style:none; padding:0; margin:12px 0 0; display:grid; gap:10px; }
+.res li { background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:14px 18px; max-width:none; margin:0; }
+.res a { font-weight:600; }
+.res .kind { font-family:var(--f-mono); font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:1px 6px; margin-left:8px; white-space:nowrap; }
+.res p { margin:4px 0 0; color:var(--muted); font-size:.95rem; }
+.jump { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; padding:0; list-style:none; }
+.jump a { display:inline-block; border:1px solid var(--line); border-radius:999px; padding:4px 12px; text-decoration:none; font-weight:600; font-size:.9rem; background:var(--surface); }
+h2 { scroll-margin-top:16px; }
 footer { border-top:1px solid var(--line); padding:24px 0 calc(24px + env(safe-area-inset-bottom,0px)); color:var(--muted); font-size:.9rem; }
 footer .wrap { max-width:1140px; display:flex; flex-wrap:wrap; gap:8px 24px; justify-content:space-between; }
 footer a { color:var(--muted); }
@@ -54,6 +62,7 @@ footer a { color:var(--muted); }
   <a class="brand" href="/" aria-label="LineTally home"><span class="logo" aria-hidden="true"></span><b>LineTally</b></a>
   <nav aria-label="Site">
     <a href="/">Home</a>
+    <a href="/resources/">Resources</a>
     <a href="/support/">Support</a>
     <a href="/privacy/">Privacy</a>
     <a href="/terms/" aria-current="page">Terms</a>
@@ -121,7 +130,7 @@ footer a { color:var(--muted); }
 </div></main>
 <footer><div class="wrap">
   <span>© 2026 SKC Software Solutions · LineTally</span>
-  <span><a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="/support/">Support</a></span>
+  <span><a href="/resources/">Resources</a> · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="/support/">Support</a></span>
 </div></footer>
 </body>
 </html>
