@@ -27,6 +27,30 @@
       "rls": {
         "write": false
       }
+    },
+    "perm_read": {
+      "type": "boolean",
+      "title": "Can Read",
+      "description": "Download reports, replacement plans and exports. Set only by the team owner through a server function.",
+      "rls": {
+        "write": false
+      }
+    },
+    "perm_write": {
+      "type": "boolean",
+      "title": "Can Write",
+      "description": "Add new records and record field visits on lines assigned to them. Set only by the team owner through a server function.",
+      "rls": {
+        "write": false
+      }
+    },
+    "perm_edit": {
+      "type": "boolean",
+      "title": "Can Edit",
+      "description": "Change or delete existing records, assign field work and add photos. Set only by the team owner through a server function.",
+      "rls": {
+        "write": false
+      }
     }
   },
   "required": [

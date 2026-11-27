@@ -135,7 +135,7 @@ function WaitingList() {
 
 function MyWork() {
   const { user } = useAuth();
-  const { systems, lineVersion } = useData();
+  const { systems, lineVersion, can } = useData();
   const { queue, online } = useOffline();
   const [open, setOpen] = useState(null);
   const [done, setDone] = useState([]);
@@ -214,7 +214,7 @@ function MyWork() {
                         {l.assigned_by_name ? ` · from ${l.assigned_by_name}` : ""}
                       </small>
                     </div>
-                    {active !== l.id && (
+                    {active !== l.id && (can.write || can.edit) && (
                       <button type="button" className="btn btn--primary" onClick={() => setActive(l.id)}>Record</button>
                     )}
                   </div>

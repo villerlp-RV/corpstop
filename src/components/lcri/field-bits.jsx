@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { Camera, ImagePlus } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { Camera, ImagePlus, Trash2 } from "lucide-react";
+import { removeLinePhoto } from "@/lib/server-fns";
 import { base44 } from "@/api/base44Client";
 import { notify } from "@/components/lcri/notify";
 import { Modal } from "@/components/lcri/bits";
@@ -7,7 +9,23 @@ import { PhotoPicker } from "@/components/lcri/Camera";
 import { MAX_PHOTOS_PER_ENTRY, addPhotosPatch, photosOf } from "@/lib/fieldwork";
 
 // Photos are private files: each view gets short-lived signed links.
-function GalleryBody({ uris }) {
+export function GalleryBody({ uris, lineId, canRemove, onRemoved }) {
+  const remove = useServerFn(removeLinePhoto);
+  const [confirm, setConfirm] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const doRemove = async (uri) => {
+    setBusy(true);
+    try {
+      await remove({ data: { lineId, uri } });
+      notify("Photo removed");
+      setConfirm(null);
+      onRemoved?.(uri);
+    } catch (e) {
+      notify(e?.message || "Couldn't remove the photo. Try again.", "error");
+    } finally {
+      setBusy(false);
+    }
+  };
   const [links, setLinks] = useState(null);
   useEffect(() => {
     let active = true;
@@ -20,21 +38,39 @@ function GalleryBody({ uris }) {
   if (!links) return <div className="spinner spinner--inline" aria-label="Loading photos" />;
   return (
     <div className="gallery">
-      {links.map((src, i) =>
-        src ? (
-          <a key={uris[i]} href={src} target="_blank" rel="noreferrer">
-            <img src={src} alt={`Photo ${i + 1}`} loading="lazy" />
-          </a>
-        ) : (
-          <div key={uris[i]} className="gallery-missing">Photo {i + 1} couldn&apos;t load</div>
-        )
-      )}
+      {links.map((src, i) => (
+        <div key={uris[i]} className="gallery-item">
+          {src ? (
+            <a href={src} target="_blank" rel="noreferrer">
+              <img src={src} alt={`Photo ${i + 1}`} loading="lazy" />
+            </a>
+          ) : (
+            <div className="gallery-missing">Photo {i + 1} couldn&apos;t load</div>
+          )}
+          {canRemove && lineId && (
+            confirm === uris[i] ? (
+              <span className="gallery-remove">
+                <button type="button" className="btn btn--sm btn--danger" disabled={busy} onClick={() => doRemove(uris[i])}>{busy ? "Removing…" : "Remove"}</button>
+                <button type="button" className="btn btn--sm" disabled={busy} onClick={() => setConfirm(null)}>Keep</button>
+              </span>
+            ) : (
+              <button type="button" className="btn btn--sm btn--ghost gallery-remove" onClick={() => setConfirm(uris[i])} aria-label={`Remove photo ${i + 1}`}>
+                <Trash2 size={13} /> Remove
+              </button>
+            )
+          )}
+        </div>
+      ))}
     </div>
   );
 }
 
-export function PhotoGallery({ uris, title = "Photos" }) {
+export function PhotoGallery({ uris, title = "Photos", lineId, canRemove = false, onChanged }) {
   const [open, setOpen] = useState(false);
+  const removed = (uri) => {
+    if (uris.length <= 1) setOpen(false);
+    onChanged?.(uri);
+  };
   if (!uris?.length) return null;
   return (
     <>
@@ -42,7 +78,7 @@ export function PhotoGallery({ uris, title = "Photos" }) {
         <Camera size={13} /> {uris.length === 1 ? "1 photo" : `${uris.length} photos`}
       </button>
       <Modal open={open} title={title} onClose={() => setOpen(false)}>
-        <div className="form"><GalleryBody uris={uris} /></div>
+        <div className="form"><GalleryBody uris={uris} lineId={lineId} canRemove={canRemove} onRemoved={removed} /></div>
       </Modal>
     </>
   );

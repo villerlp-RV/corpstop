@@ -41,6 +41,19 @@ export function checkTeamAction(action, actor, target) {
   }
 }
 
+const flag = (u, name) => !!(u?.[name] ?? u?.data?.[name]);
+const legacy = (u) => ["perm_read", "perm_write", "perm_edit"].every((n) => (u?.[n] ?? u?.data?.[n]) == null);
+
 export function memberView(u) {
-  return { id: u.id, name: u.full_name || u.email || "Unnamed user", email: u.email || "", role: teamRoleOf(u) || "member" };
+  const role = teamRoleOf(u) || "member";
+  const all = role === "owner";
+  return {
+    id: u.id,
+    name: u.full_name || u.email || "Unnamed user",
+    email: u.email || "",
+    role,
+    perms: legacy(u) && !all
+      ? { view: true, read: true, write: true, edit: false }
+      : { view: true, read: all || flag(u, "perm_read"), write: all || flag(u, "perm_write"), edit: all || flag(u, "perm_edit") },
+  };
 }

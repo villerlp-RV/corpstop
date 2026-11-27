@@ -11,7 +11,7 @@ const MATERIAL_PHRASE = {
 };
 
 export default function Notices() {
-  const { systems, loading, updateSystem, teamId } = useData();
+  const { systems, loading, updateSystem, teamId, can } = useData();
   const list = systems || [];
   const [selected, setSelected] = useState(null);
   const [previewId, setPreviewId] = useState(null);
@@ -112,9 +112,13 @@ export default function Notices() {
           </ul>
           <div className="summary">
             <span><b className="num">{fmt(letters)}</b> letters across <b>{chosen.length}</b> systems</span>
-            <button type="button" className="btn btn--primary" disabled={!chosen.length || queuing} onClick={queue}>
-              {queuing ? "Queuing…" : "Queue for print and mail"}
-            </button>
+            {can.write ? (
+              <button type="button" className="btn btn--primary" disabled={!chosen.length || queuing} onClick={queue}>
+                {queuing ? "Queuing…" : "Queue for print and mail"}
+              </button>
+            ) : (
+              <span className="muted">Needs Write access to queue notices</span>
+            )}
           </div>
         </div>
 

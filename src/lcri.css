@@ -297,3 +297,14 @@
 .lcri-app .row-actions { display: inline-flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
 .lcri-app .foot-brand { white-space: normal; }
 .lcri-app .foot-brand a { color: var(--muted); }
+
+/* Admin: photo removal and member permissions */
+.lcri-app .gallery-item { display: grid; gap: 6px; align-content: start; }
+.lcri-app .gallery-remove { display: inline-flex; gap: 6px; justify-self: start; }
+.lcri-app .perm-table .perm-col { text-align: center; width: 72px; }
+.lcri-app .perm-table input[type="checkbox"] { width: 18px; height: 18px; }
+.lcri-app .tag--mono { margin-left: 0; }
+.lcri-app .perm-legend { display: grid; gap: 6px; margin: 14px 0 0; font-size: .9rem; }
+.lcri-app .perm-legend div { display: grid; grid-template-columns: 70px 1fr; gap: 10px; }
+.lcri-app .perm-legend dt { font-weight: 600; }
+.lcri-app .perm-legend dd { margin: 0; color: var(--muted); }

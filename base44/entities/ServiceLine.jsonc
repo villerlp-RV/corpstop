@@ -14,12 +14,50 @@
     },
     "system_id": {
       "type": "string",
-      "title": "Water System ID"
+      "title": "Water System ID",
+      "rls": {
+        "update": {
+          "$or": [
+            {
+              "data.team_id": null
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            },
+            {
+              "user_condition": {
+                "data.perm_edit": true
+              }
+            }
+          ]
+        }
+      }
     },
     "address": {
       "type": "string",
       "title": "Service Address",
-      "minLength": 1
+      "minLength": 1,
+      "rls": {
+        "update": {
+          "$or": [
+            {
+              "data.team_id": null
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            },
+            {
+              "user_condition": {
+                "data.perm_edit": true
+              }
+            }
+          ]
+        }
+      }
     },
     "material": {
       "type": "string",
@@ -54,20 +92,96 @@
     "assigned_to": {
       "type": "string",
       "title": "Assigned To (User ID)",
-      "description": "Team member who should visit this line."
+      "description": "Team member who should visit this line.",
+      "rls": {
+        "update": {
+          "$or": [
+            {
+              "data.team_id": null
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            },
+            {
+              "user_condition": {
+                "data.perm_edit": true
+              }
+            }
+          ]
+        }
+      }
     },
     "assigned_to_name": {
       "type": "string",
-      "title": "Assigned To"
+      "title": "Assigned To",
+      "rls": {
+        "update": {
+          "$or": [
+            {
+              "data.team_id": null
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            },
+            {
+              "user_condition": {
+                "data.perm_edit": true
+              }
+            }
+          ]
+        }
+      }
     },
     "assigned_by_name": {
       "type": "string",
-      "title": "Assigned By"
+      "title": "Assigned By",
+      "rls": {
+        "update": {
+          "$or": [
+            {
+              "data.team_id": null
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            },
+            {
+              "user_condition": {
+                "data.perm_edit": true
+              }
+            }
+          ]
+        }
+      }
     },
     "assigned_at": {
       "type": "string",
       "format": "date-time",
-      "title": "Assigned At"
+      "title": "Assigned At",
+      "rls": {
+        "update": {
+          "$or": [
+            {
+              "data.team_id": null
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            },
+            {
+              "user_condition": {
+                "data.perm_edit": true
+              }
+            }
+          ]
+        }
+      }
     },
     "assignment_status": {
       "type": "string",
@@ -107,25 +221,6 @@
     "address"
   ],
   "rls": {
-    "create": {
-      "$or": [
-        {
-          "$and": [
-            {
-              "data.team_id": "{{user.data.team_id}}"
-            },
-            {
-              "data.team_id": {
-                "$ne": null
-              }
-            }
-          ]
-        },
-        {
-          "data.team_id": null
-        }
-      ]
-    },
     "read": {
       "$or": [
         {
@@ -152,17 +247,89 @@
         }
       ]
     },
+    "create": {
+      "$or": [
+        {
+          "$and": [
+            {
+              "$and": [
+                {
+                  "data.team_id": "{{user.data.team_id}}"
+                },
+                {
+                  "data.team_id": {
+                    "$ne": null
+                  }
+                }
+              ]
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "data.team_role": "owner"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "data.perm_write": true
+                  }
+                },
+                {
+                  "user_condition": {
+                    "data.perm_edit": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "data.team_id": null
+        }
+      ]
+    },
     "update": {
       "$or": [
         {
           "$and": [
             {
-              "data.team_id": "{{user.data.team_id}}"
+              "$and": [
+                {
+                  "data.team_id": "{{user.data.team_id}}"
+                },
+                {
+                  "data.team_id": {
+                    "$ne": null
+                  }
+                }
+              ]
             },
             {
-              "data.team_id": {
-                "$ne": null
-              }
+              "$or": [
+                {
+                  "user_condition": {
+                    "data.team_role": "owner"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "data.perm_edit": true
+                  }
+                },
+                {
+                  "$and": [
+                    {
+                      "user_condition": {
+                        "data.perm_write": true
+                      }
+                    },
+                    {
+                      "data.assigned_to": "{{user.id}}"
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -183,12 +350,30 @@
         {
           "$and": [
             {
-              "data.team_id": "{{user.data.team_id}}"
+              "$and": [
+                {
+                  "data.team_id": "{{user.data.team_id}}"
+                },
+                {
+                  "data.team_id": {
+                    "$ne": null
+                  }
+                }
+              ]
             },
             {
-              "data.team_id": {
-                "$ne": null
-              }
+              "$or": [
+                {
+                  "user_condition": {
+                    "data.team_role": "owner"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "data.perm_edit": true
+                  }
+                }
+              ]
             }
           ]
         },
