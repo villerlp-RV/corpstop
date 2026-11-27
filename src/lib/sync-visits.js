@@ -4,6 +4,7 @@
 import { countsAfterChange } from "./lcri.js";
 import { fieldRecordPatch } from "./fieldwork.js";
 import { isRetryable } from "./offline.js";
+import { attachmentRecord } from "./attachments.js";
 
 const photoFile = (blob, i, recordedAt) =>
   new File([blob], `visit-${recordedAt.slice(0, 10)}-${i + 1}.jpg`, { type: blob.type || "image/jpeg" });
@@ -32,7 +33,22 @@ export async function syncVisit(base44, store, item) {
     await store.put(item);
   }
 
-  const { patch, error } = fieldRecordPatch(line, { ...item.input, photo_uris: item.uploaded || [] }, item.user, new Date(item.recordedAt));
+  // Same for attached files: upload each once, keep the record for retries.
+  if (item.files?.length) {
+    const done = [...(item.uploadedFiles || [])];
+    for (let i = done.length; i < item.files.length; i++) {
+      const f = item.files[i];
+      const file = new File([f.blob], f.name || `attachment-${i + 1}`, { type: f.type || f.blob?.type || "application/octet-stream" });
+      const res = await base44.integrations.Core.UploadPrivateFile({ file });
+      done.push(attachmentRecord({ uri: res.file_uri, name: f.name, type: f.type, size: f.size ?? f.blob?.size }, item.user, new Date(item.recordedAt)));
+      item = { ...item, uploadedFiles: done };
+      await store.put(item);
+    }
+    item = { ...item, files: [], uploadedFiles: done };
+    await store.put(item);
+  }
+
+  const { patch, error } = fieldRecordPatch(line, { ...item.input, photo_uris: item.uploaded || [], attachments: item.uploadedFiles || [] }, item.user, new Date(item.recordedAt));
   if (error) throw Object.assign(new Error(error), { status: 400 });
   await base44.entities.ServiceLine.update(line.id, patch);
 
