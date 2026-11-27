@@ -243,6 +243,23 @@
       },
       "title": "Photos (private file URIs)",
       "description": "From UploadPrivateFile; view with CreateFileSignedUrl. Newest last."
+    },
+    "attachments": {
+      "type": "array",
+      "title": "Attachments",
+      "description": "Files attached to the line (tap cards, permits, invoices, records). Private file URIs from UploadPrivateFile; open with CreateFileSignedUrl.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "uri": { "type": "string" },
+          "name": { "type": "string" },
+          "type": { "type": "string" },
+          "size": { "type": "number" },
+          "added_at": { "type": "string" },
+          "added_by": { "type": "string" }
+        },
+        "required": ["uri", "name"]
+      }
     }
   },
   "required": [

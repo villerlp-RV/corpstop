@@ -9,6 +9,7 @@ import { MaterialCell, NonLeadTypeSelect } from "@/components/lcri/pipe-bits";
 import { CONNECTORS, materialText } from "@/lib/pipes";
 import { AssignmentCell, PhotoGallery } from "@/components/lcri/field-bits";
 import { PhotoPicker } from "@/components/lcri/Camera";
+import { FilePicker, LineAttachments } from "@/components/lcri/Attachments";
 import { photoStamp } from "@/components/lcri/field-bits";
 import { useOffline } from "@/lib/OfflineQueue";
 import { cacheStore } from "@/lib/offline-store";
@@ -42,6 +43,7 @@ function RecordForm({ line, onSaved, onCancel }) {
   const [method, setMethod] = useState(ID_METHODS[0]);
   const [notes, setNotes] = useState("");
   const [photos, setPhotos] = useState([]);
+  const [files, setFiles] = useState([]);
   const [saving, setSaving] = useState(false);
   const hasNonLead = split ? [systemSide, customerSide].includes("non_lead") : material === "non_lead";
 
@@ -59,7 +61,7 @@ function RecordForm({ line, onSaved, onCancel }) {
     input.material = check.patch.material;
     setSaving(true);
     try {
-      const outcome = await enqueue(queuedVisit({ line, input, photos, user }));
+      const outcome = await enqueue(queuedVisit({ line, input, photos, files, user }));
       if (outcome === "saved") notify(`${line.address} recorded as ${materialText(check.patch)}`);
       else if (outcome === "queued") notify(`Saved on this phone. ${line.address} uploads when you have signal.`);
       else notify(`${line.address} couldn't be saved. See "Waiting to upload".`, "error");
@@ -119,6 +121,10 @@ function RecordForm({ line, onSaved, onCancel }) {
       <div className="field">
         <span className="field-label">Photos <span className="muted">(optional)</span></span>
         <PhotoPicker photos={photos} onChange={setPhotos} max={MAX_PHOTOS_PER_ENTRY} idPrefix={`visit-${line.id}`} stamp={stamp} />
+      </div>
+      <div className="field">
+        <span className="field-label">Files <span className="muted">(optional: tap card, permit, customer form)</span></span>
+        <FilePicker files={files} onChange={setFiles} idPrefix={`visit-${line.id}`} />
       </div>
       <div className="record-actions">
         <button type="button" className="btn btn--big" onClick={onCancel} disabled={saving}>Cancel</button>
@@ -286,6 +292,7 @@ function MyWork() {
                 <span><MaterialCell line={l} /></span>
                 <span className="muted">{timeAgo(l.completed_at)}</span>
                 <PhotoGallery uris={photosOf(l)} />
+                <LineAttachments line={l} />
               </li>
             ))}
           </ul>
@@ -352,7 +359,7 @@ function Everyone() {
                   <td>{l.address}</td>
                   <td>{sysName(l.system_id)}</td>
                   <td><MaterialCell line={l} /><small className="muted block">{[l.identification_method, l.connector === "lead" ? "lead connector" : ""].filter(Boolean).join(" · ")}</small></td>
-                  <td><AssignmentCell line={l} /> <PhotoGallery uris={photosOf(l)} title={`Photos · ${l.address}`} /></td>
+                  <td><AssignmentCell line={l} /> <PhotoGallery uris={photosOf(l)} title={`Photos · ${l.address}`} /> <LineAttachments line={l} /></td>
                   <td className="n">{timeAgo(l.completed_at)}</td>
                 </tr>
               ))}

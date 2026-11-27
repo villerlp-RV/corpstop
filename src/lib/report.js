@@ -4,6 +4,7 @@ import { READINESS, checklist, counts, fmt, formatDate, noticeCurrent, portfolio
 import { connectorOf, connectorSummary, materialText } from "./pipes.js";
 import { materialOf } from "./lcri.js";
 import { photosOf } from "./fieldwork.js";
+import { attachmentsOf } from "./attachments.js";
 
 export function addressLines(profile) {
   if (!profile) return [];
@@ -80,6 +81,7 @@ export function systemReport(system, lines, profile, { now = new Date(), prepare
         [
           l.assignment_status === "done" ? `Recorded · ${l.assigned_to_name || ""}`.trim() : l.assignment_status === "open" ? `Open · ${l.assigned_to_name || ""}`.trim() : "",
           photosOf(l).length ? `${photosOf(l).length} ${photosOf(l).length === 1 ? "photo" : "photos"}` : "",
+          attachmentsOf(l).length ? `${attachmentsOf(l).length} ${attachmentsOf(l).length === 1 ? "file" : "files"}` : "",
         ].filter(Boolean).join(" · ") || "—",
       ]),
       note: `${fmt(lines.length)} service lines on file of ${fmt(t)} in the inventory. ${fmt(visited)} recorded in the field. Connectors on file: ${connectorSummary(lines)}. Split-ownership lines take the category of their worst portion.`,

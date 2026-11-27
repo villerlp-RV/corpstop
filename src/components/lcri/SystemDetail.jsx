@@ -9,6 +9,7 @@ import { MaterialBar, Modal, ReadinessPill } from "@/components/lcri/bits";
 import SystemForm from "@/components/lcri/SystemForm";
 import ReportButton from "@/components/lcri/ReportButton";
 import ImportLines from "@/components/lcri/ImportLines";
+import { LineAttachments } from "@/components/lcri/Attachments";
 import { ConnectorCell, LineDetails, MaterialCell, NonLeadTypeSelect } from "@/components/lcri/pipe-bits";
 import { connectorSummary } from "@/lib/pipes";
 import { replacementPlan, systemReport } from "@/lib/report";
@@ -358,7 +359,7 @@ export default function SystemDetail({ id }) {
             <thead>
               <tr>
                 {can.edit && <th className="sel"><span className="sr-only">Select</span></th>}
-                <th>Address</th><th>Material</th><th>Connector</th><th>How identified</th><th>Field visit</th><th>Photos</th><th>Record here</th>
+                <th>Address</th><th>Material</th><th>Connector</th><th>How identified</th><th>Field visit</th><th>Photos &amp; files</th><th>Record here</th>
               </tr>
             </thead>
             <tbody>
@@ -374,7 +375,7 @@ export default function SystemDetail({ id }) {
                   <td><ConnectorCell line={l} /></td>
                   <td>{l.identification_method || "—"}{l.verified_by ? <small className="muted block">{l.verified_by}</small> : null}</td>
                   <td><AssignmentCell line={l} /></td>
-                  <td><span className="photo-cell"><PhotoGallery uris={photosOf(l)} title={`Photos · ${l.address}`} lineId={l.id} canRemove={can.admin} onChanged={loadLines} />{can.edit && <AddLinePhotos line={l} onSaved={loadLines} />}</span></td>
+                  <td><span className="photo-cell"><PhotoGallery uris={photosOf(l)} title={`Photos · ${l.address}`} lineId={l.id} canRemove={can.admin} onChanged={loadLines} />{can.edit && <AddLinePhotos line={l} onSaved={loadLines} />}<LineAttachments line={l} canAdd={can.edit} canRemove={can.edit} onChanged={loadLines} /></span></td>
                   <td>{l.material === "unknown" && can.edit ? <VerifyControls line={l} onSave={verifyLine} /> : <span className="muted">—</span>}</td>
                 </tr>
               ))}

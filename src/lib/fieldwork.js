@@ -2,6 +2,7 @@
 // records what they find from a phone. Pure functions, unit-tested.
 
 import { lineFields } from "./pipes.js";
+import { addAttachmentsPatch } from "./attachments.js";
 
 export const FIELD_MATERIALS = ["lead", "grr", "non_lead"];
 export const MAX_PHOTOS_PER_ENTRY = 5;
@@ -62,6 +63,7 @@ export function fieldRecordPatch(line, input, user, now = new Date()) {
       verified_by: user?.full_name || user?.email || "",
       field_notes: notes || null,
       ...(input.photo_uris?.length ? addPhotosPatch(line, input.photo_uris) : {}),
+      ...(input.attachments?.length ? addAttachmentsPatch(line, input.attachments) : {}),
       assignment_status: "done",
       completed_at: now.toISOString(),
     },

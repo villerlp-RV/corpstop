@@ -14,7 +14,7 @@ export function newQueueId(now = Date.now(), rand = Math.random) {
 }
 
 // What the phone keeps for one visit until it reaches the server.
-export function queuedVisit({ line, input, photos, user, now = new Date() }) {
+export function queuedVisit({ line, input, photos, files, user, now = new Date() }) {
   return {
     id: newQueueId(now.getTime()),
     lineId: line.id,
@@ -29,6 +29,7 @@ export function queuedVisit({ line, input, photos, user, now = new Date() }) {
       ...(input.connector !== undefined ? { connector: input.connector } : {}),
     },
     photos: photos || [], // Blobs; IndexedDB stores them as-is
+    files: (files || []).map((f) => ({ blob: f, name: f.name, type: f.type, size: f.size })), // attachments
     user: { full_name: user?.full_name || "", email: user?.email || "" },
     recordedAt: now.toISOString(),
     attempts: 0,
