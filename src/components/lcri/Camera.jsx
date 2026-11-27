@@ -8,16 +8,17 @@ const MAX_EDGE = 1600; // px; keeps photos readable and uploads small on a weak 
 const QUALITY = 0.82;
 const MAX_SOURCE_BYTES = 25 * 1024 * 1024;
 
-// Burn the timestamp band into the bottom of the photo.
-function drawStamp(ctx, w, h, lines) {
-  const { font, pad, lineH, band } = stampLayout(w, h, lines.length);
-  ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
-  ctx.fillRect(0, h - band, w, band);
+// The timestamp goes in its own band added below the photo, so it never
+// covers any of the picture. h is the photo's height; the band starts there.
+function drawStamp(ctx, w, h, lines, band) {
+  const { font, pad, lineH } = stampLayout(w, h, lines.length);
+  ctx.fillStyle = "#14191d";
+  ctx.fillRect(0, h, w, band);
   ctx.fillStyle = "#fff";
   ctx.textBaseline = "top";
   lines.forEach((line, i) => {
     ctx.font = `${i === 0 ? 700 : 500} ${font}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
-    ctx.fillText(line, pad, h - band + pad + i * lineH + Math.round((lineH - font) / 2), w - pad * 2);
+    ctx.fillText(line, pad, h + pad + i * lineH + Math.round((lineH - font) / 2), w - pad * 2);
   });
 }
 
@@ -26,11 +27,14 @@ function drawStamp(ctx, w, h, lines) {
 async function toJpeg(source, width, height, stampText) {
   const scale = Math.min(1, MAX_EDGE / Math.max(width, height));
   const canvas = document.createElement("canvas");
-  canvas.width = Math.round(width * scale);
-  canvas.height = Math.round(height * scale);
+  const w = Math.round(width * scale);
+  const h = Math.round(height * scale);
+  const band = stampText?.length ? stampLayout(w, h, stampText.length).band : 0;
+  canvas.width = w;
+  canvas.height = h + band;
   const ctx = canvas.getContext("2d");
-  ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
-  if (stampText?.length) drawStamp(ctx, canvas.width, canvas.height, stampText);
+  ctx.drawImage(source, 0, 0, w, h);
+  if (band) drawStamp(ctx, w, h, stampText, band);
   return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Couldn't process the photo"))), "image/jpeg", QUALITY));
 }
 
@@ -49,6 +53,23 @@ async function fileToJpeg(file, stamp) {
   } finally {
     bitmap.close?.();
   }
+}
+
+// What will be printed under the photo, shown under the viewfinder (not over
+// it) so the tech knows it's recorded without anything covering the shot.
+function StampPreview({ stamp }) {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 15000);
+    return () => clearInterval(id);
+  }, []);
+  const [when, ...rest] = stampLines({ ...stamp, takenAt: now, source: "camera" });
+  return (
+    <div className="camera-stamp" aria-label="Printed below each photo">
+      <b>{when}</b>
+      {rest.map((l) => <span key={l}>{l}</span>)}
+    </div>
+  );
 }
 
 // Full-screen live camera. Falls back to the phone's own camera app when the
@@ -131,6 +152,7 @@ function CameraSheet({ onShot, onClose, onFallback, stamp }) {
         {ready && <p className="camera-hint">Tap to focus</p>}
       </div>
       {!ready && <p className="camera-wait">Opening camera…</p>}
+      {stamp && <StampPreview stamp={stamp} />}
       <div className="camera-bar">
         <button type="button" className="camera-btn" onClick={onClose} aria-label="Close camera"><X size={26} /></button>
         <button type="button" className="shutter" onClick={shoot} disabled={!ready} aria-label="Take photo" />
