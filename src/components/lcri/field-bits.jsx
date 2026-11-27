@@ -6,6 +6,8 @@ import { base44 } from "@/api/base44Client";
 import { notify } from "@/components/lcri/notify";
 import { Modal } from "@/components/lcri/bits";
 import { PhotoPicker } from "@/components/lcri/Camera";
+import { useAuth } from "@/lib/AuthContext";
+import { useData } from "@/lib/DataContext";
 import { MAX_PHOTOS_PER_ENTRY, addPhotosPatch, photosOf } from "@/lib/fieldwork";
 
 // Photos are private files: each view gets short-lived signed links.
@@ -84,8 +86,19 @@ export function PhotoGallery({ uris, title = "Photos", lineId, canRemove = false
   );
 }
 
+// What gets stamped on a line's photos: its address and system, and who took it.
+export function photoStamp(line, systems, user) {
+  return {
+    address: line?.address || "",
+    systemName: (systems || []).find((s) => s.id === line?.system_id)?.name || "",
+    by: user?.full_name || user?.email || "",
+  };
+}
+
 // Add photos to any service line from the system page (desktop or phone).
 export function AddLinePhotos({ line, onSaved }) {
+  const { user } = useAuth();
+  const { systems } = useData();
   const [open, setOpen] = useState(false);
   const [photos, setPhotos] = useState([]);
   const [saving, setSaving] = useState(false);
@@ -118,7 +131,7 @@ export function AddLinePhotos({ line, onSaved }) {
       </button>
       <Modal open={open} title={`Photos for ${line.address}`} onClose={close}>
         <div className="form">
-          <PhotoPicker photos={photos} onChange={setPhotos} max={MAX_PHOTOS_PER_ENTRY} idPrefix={`line-${line.id}`} />
+          <PhotoPicker photos={photos} onChange={setPhotos} max={MAX_PHOTOS_PER_ENTRY} idPrefix={`line-${line.id}`} stamp={photoStamp(line, systems, user)} />
           <div className="form-actions">
             <button type="button" className="btn" onClick={close}>Cancel</button>
             <button type="button" className="btn btn--primary" disabled={!photos.length || saving} onClick={save}>

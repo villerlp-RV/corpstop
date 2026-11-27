@@ -9,6 +9,7 @@ import { MaterialCell, NonLeadTypeSelect } from "@/components/lcri/pipe-bits";
 import { CONNECTORS, materialText } from "@/lib/pipes";
 import { AssignmentCell, PhotoGallery } from "@/components/lcri/field-bits";
 import { PhotoPicker } from "@/components/lcri/Camera";
+import { photoStamp } from "@/components/lcri/field-bits";
 import { useOffline } from "@/lib/OfflineQueue";
 import { cacheStore } from "@/lib/offline-store";
 import { hideQueued, queuedVisit } from "@/lib/offline";
@@ -29,7 +30,9 @@ function timeAgo(iso) {
 // is signal, so it works the same with or without a connection.
 function RecordForm({ line, onSaved, onCancel }) {
   const { user } = useAuth();
+  const { systems } = useData();
   const { enqueue } = useOffline();
+  const stamp = photoStamp(line, systems, user);
   const [material, setMaterial] = useState("");
   const [split, setSplit] = useState(false);
   const [systemSide, setSystemSide] = useState("");
@@ -115,7 +118,7 @@ function RecordForm({ line, onSaved, onCancel }) {
       </div>
       <div className="field">
         <span className="field-label">Photos <span className="muted">(optional)</span></span>
-        <PhotoPicker photos={photos} onChange={setPhotos} max={MAX_PHOTOS_PER_ENTRY} idPrefix={`visit-${line.id}`} />
+        <PhotoPicker photos={photos} onChange={setPhotos} max={MAX_PHOTOS_PER_ENTRY} idPrefix={`visit-${line.id}`} stamp={stamp} />
       </div>
       <div className="record-actions">
         <button type="button" className="btn btn--big" onClick={onCancel} disabled={saving}>Cancel</button>
