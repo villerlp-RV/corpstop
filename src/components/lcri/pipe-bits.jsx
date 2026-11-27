@@ -90,7 +90,7 @@ export function LineDetails({ line, system, canEdit, onSaved, updateSystem, user
         {form && (
           <form className="form line-form" onSubmit={save}>
             <fieldset disabled={!canEdit || saving} className="plain">
-              <div className="seg" role="radiogroup" aria-label="Ownership">
+              <div className="own-pick" role="radiogroup" aria-label="Ownership">
                 {[["single", "One owner"], ["split", "Split: system side and customer side"]].map(([v, l]) => (
                   <label key={v} className={form.ownership === v ? "on" : undefined}>
                     <input type="radio" name="ownership" value={v} checked={form.ownership === v} onChange={() => set("ownership")(v)} /> {l}

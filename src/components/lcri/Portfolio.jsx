@@ -8,22 +8,26 @@ import { Kpi, Legend, MaterialBar, Modal, ReadinessPill } from "@/components/lcr
 import SystemForm from "@/components/lcri/SystemForm";
 import ReportButton from "@/components/lcri/ReportButton";
 import { portfolioReport } from "@/lib/report";
+import { FilterBar } from "@/components/lcri/FilterBar";
+import { EMPTY_SYSTEM_FILTER, filterSystems, isFiltered, statesOf } from "@/lib/filters";
 import {
-  EXAMPLE_SYSTEMS, exampleLines, fmt, formatDate, needsAttention, noticeCurrent,
+  EXAMPLE_SYSTEMS, READINESS, exampleLines, fmt, formatDate, noticeCurrent,
   portfolioSummary, readiness, totalLines, unknownShare, yearOneTarget,
 } from "@/lib/lcri";
 
 export default function Portfolio() {
   const { systems, loading, reload, teamId, can } = useData();
   const navigate = useNavigate();
-  const [filter, setFilter] = useState("all");
+  const [filter, setFilter] = useState(EMPTY_SYSTEM_FILTER);
+  const setF = (k) => (v) => setFilter((f) => ({ ...f, [k]: v }));
   const [adding, setAdding] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const list = systems || [];
   const summary = useMemo(() => portfolioSummary(list), [list]);
   const states = new Set(list.map((s) => s.state)).size;
-  const rows = filter === "all" ? list : list.filter((s) => needsAttention(s));
+  const rows = filterSystems(list, filter);
+  const filtering = isFiltered(filter);
   const hasExamples = list.some((s) => s.is_example);
 
   const addSystem = async (data) => {
@@ -132,10 +136,27 @@ export default function Portfolio() {
             <div className="card-h">
               <b>Systems</b>
               <Legend />
-              <div className="seg" role="group" aria-label="Filter systems">
-                <button type="button" aria-pressed={filter === "all"} onClick={() => setFilter("all")}>All</button>
-                <button type="button" aria-pressed={filter === "attn"} onClick={() => setFilter("attn")}>Needs attention</button>
+              <div className="seg" role="group" aria-label="Show">
+                <button type="button" aria-pressed={!filter.attention} onClick={() => setF("attention")(false)}>All</button>
+                <button type="button" aria-pressed={filter.attention} onClick={() => setF("attention")(true)}>Needs attention</button>
               </div>
+            </div>
+            <div className="card-sub">
+              <FilterBar
+                label="Filter systems"
+                query={filter.q}
+                onQuery={setF("q")}
+                placeholder="Search name, PWS ID or tech"
+                selects={[
+                  { id: "f-state", label: "State", value: filter.state, onChange: setF("state"), options: [["", "All states"], ...statesOf(list).map((s) => [s, s])] },
+                  { id: "f-status", label: "Readiness", value: filter.status, onChange: setF("status"), options: [["", "Any readiness"], ...Object.entries(READINESS).map(([k, r]) => [k, r.label])] },
+                ]}
+                shown={rows.length}
+                total={list.length}
+                noun="systems"
+                active={filtering}
+                onClear={() => setFilter(EMPTY_SYSTEM_FILTER)}
+              />
             </div>
             <div className="tbl-wrap">
               <table>
@@ -178,7 +199,10 @@ export default function Portfolio() {
                   })}
                   {rows.length === 0 && (
                     <tr>
-                      <td colSpan={9} className="muted">No systems need attention right now.</td>
+                      <td colSpan={9} className="muted">
+                        {filter.attention && !filter.q && !filter.state && !filter.status ? "No systems need attention right now." : "No systems match these filters."}{" "}
+                        <button type="button" className="linkbtn" onClick={() => setFilter(EMPTY_SYSTEM_FILTER)}>Show all</button>
+                      </td>
                     </tr>
                   )}
                 </tbody>
