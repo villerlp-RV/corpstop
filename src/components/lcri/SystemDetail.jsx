@@ -8,7 +8,7 @@ import { notify } from "@/components/lcri/notify";
 import { MaterialBar, Modal, ReadinessPill, Swatch } from "@/components/lcri/bits";
 import SystemForm from "@/components/lcri/SystemForm";
 import ReportButton from "@/components/lcri/ReportButton";
-import { systemReport } from "@/lib/report";
+import { replacementPlan, systemReport } from "@/lib/report";
 import { AddLinePhotos, AssignmentCell, PhotoGallery } from "@/components/lcri/field-bits";
 import { useMembers } from "@/components/lcri/useMembers";
 import { assignPatch, photosOf, unassignPatch } from "@/lib/fieldwork";
@@ -233,6 +233,7 @@ export default function SystemDetail({ id }) {
         <div className="actions">
           <ReadinessPill status={readiness(system)} />
           <ReportButton build={(profile, opts) => systemReport(system, lines || [], profile, opts)} disabled={lines === null} />
+          <ReportButton label="Replacement plan" done="Draft replacement plan downloaded" build={(profile, opts) => replacementPlan(system, lines || [], profile, opts)} disabled={lines === null} />
           <button type="button" className="btn" onClick={() => setEditing(true)}><Pencil size={15} /> Edit</button>
         </div>
       </div>
@@ -267,9 +268,14 @@ export default function SystemDetail({ id }) {
                   </button>
                 )}
                 {it.key === "plan" && (
-                  <button type="button" className="btn btn--sm" onClick={() => save({ plan_drafted: !system.plan_drafted }, system.plan_drafted ? "Marked as not drafted" : "Replacement plan marked as drafted")}>
-                    {system.plan_drafted ? "Undo" : "Mark drafted"}
-                  </button>
+                  <span className="row-actions">
+                    {!system.plan_drafted && (
+                      <ReportButton small label="Draft plan" done="Draft replacement plan downloaded" build={(profile, opts) => replacementPlan(system, lines || [], profile, opts)} disabled={lines === null} />
+                    )}
+                    <button type="button" className="btn btn--sm" onClick={() => save({ plan_drafted: !system.plan_drafted }, system.plan_drafted ? "Marked as not drafted" : "Replacement plan marked as drafted")}>
+                      {system.plan_drafted ? "Undo" : "Mark drafted"}
+                    </button>
+                  </span>
                 )}
                 {it.key === "notice" && !it.done && <Link className="btn btn--sm" to="/notices">Send</Link>}
               </li>
