@@ -12,11 +12,16 @@ export const PERMISSIONS = [
 // What a new member gets when they join with an invite code.
 export const DEFAULT_MEMBER = { read: true, write: true, edit: false };
 
-const flag = (user, name) => !!(user?.[name] ?? user?.data?.[name]);
+const raw = (user, name) => user?.[name] ?? user?.data?.[name];
+const flag = (user, name) => !!raw(user, name);
+
+// Members who joined before permissions existed have no flags yet: they get the defaults.
+export const needsDefaults = (user) => ["perm_read", "perm_write", "perm_edit"].every((n) => raw(user, n) == null);
 
 export function permissionsOf(user) {
   if (!user) return { view: false, read: false, write: false, edit: false, admin: false };
   if (!teamIdOf(user) || isOwner(user)) return { view: true, read: true, write: true, edit: true, admin: true };
+  if (needsDefaults(user)) return { view: true, ...DEFAULT_MEMBER, admin: false };
   return { view: true, read: flag(user, "perm_read"), write: flag(user, "perm_write"), edit: flag(user, "perm_edit"), admin: false };
 }
 

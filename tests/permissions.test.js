@@ -12,7 +12,7 @@ test("personal accounts and owners can do everything", () => {
 test("members get exactly their flags, never admin", () => {
   const p = permissionsOf({ team_id: "t", team_role: "member", perm_read: true, perm_write: false, data: { perm_edit: true } });
   assert.deepEqual(p, { view: true, read: true, write: false, edit: true, admin: false });
-  assert.deepEqual(permissionsOf({ team_id: "t", team_role: "member" }), { view: true, read: false, write: false, edit: false, admin: false });
+  assert.deepEqual(permissionsOf({ team_id: "t", team_role: "member", perm_read: false }), { view: true, read: false, write: false, edit: false, admin: false });
   assert.equal(permissionCode(p), "REV");
   assert.equal(permissionCode({ view: true, read: true, write: true, edit: true }), "RWEV");
   assert.deepEqual(DEFAULT_MEMBER, { read: true, write: true, edit: false });
@@ -76,4 +76,15 @@ test("only the owner (or a personal record's creator) can remove photos", async 
   await teams.leave(admin, member);
   await teams.removePhoto(admin, member, { lineId: "l2", uri: "p" });
   assert.deepEqual(admin.db.ServiceLine[1].photo_uris, []);
+});
+
+test("members from before permissions get the defaults", async () => {
+  assert.deepEqual(permissionsOf({ team_id: "t", team_role: "member" }), { view: true, read: true, write: true, edit: false, admin: false });
+  const admin = fakeAdmin([{ id: "o", full_name: "Owner" }]);
+  await teams.create(admin, admin.db.User[0], { name: "T" });
+  admin.db.User.push({ id: "old", full_name: "Old", team_id: admin.db.User[0].team_id, team_role: "member" });
+  const ov = await teams.overview(admin, admin.db.User[0]);
+  assert.deepEqual(ov.members.find((m) => m.id === "old").perms, { view: true, read: true, write: true, edit: false });
+  const old = admin.db.User[1];
+  assert.deepEqual([old.perm_read, old.perm_write, old.perm_edit], [true, true, false]);
 });

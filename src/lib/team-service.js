@@ -2,7 +2,7 @@
 // authenticated caller (`me`) and validated input, checks the rule in
 // team.js, then acts. No framework imports, so tests can pass a fake `admin`.
 import { checkTeamAction, memberView, newInviteCode, normalizeInviteCode, teamIdOf, teamRoleOf } from "./team.js";
-import { DEFAULT_MEMBER, permFields } from "./permissions.js";
+import { DEFAULT_MEMBER, needsDefaults, permFields } from "./permissions.js";
 import { photosOf } from "./fieldwork.js";
 import { isOwner } from "./team.js";
 
@@ -46,6 +46,14 @@ async function membersOf(admin, teamId) {
     .sort((a, b) => (a.role === b.role ? a.name.localeCompare(b.name) : a.role === "owner" ? -1 : 1));
 }
 
+// Members who joined before permissions existed get the default flags, so the
+// entity rules (which check the flags) keep letting them work.
+async function backfillPermissions(admin, teamId) {
+  const users = unwrap(await admin.entities.User.filter({ team_id: teamId }, { limit: 500 }).catch(() => []));
+  const stale = users.filter((u) => teamRoleOf(u) === "member" && needsDefaults(u));
+  await Promise.all(stale.map((u) => admin.entities.User.update(u.id, permFields(DEFAULT_MEMBER))));
+}
+
 export async function overview(admin, me) {
   const teamId = teamIdOf(me);
   const none = { team: null, members: [], me: { id: me.id, role: null } };
@@ -53,6 +61,7 @@ export async function overview(admin, me) {
   const team = await admin.entities.Team.get(teamId).catch(() => null);
   if (!team) return none;
   const role = teamRoleOf(me);
+  await backfillPermissions(admin, teamId);
   return {
     team: { id: team.id, name: team.name, invite_code: role === "owner" ? team.invite_code : null },
     members: await membersOf(admin, teamId),
