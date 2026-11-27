@@ -3,18 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Corpstop: lead service line compliance for water operators</title>
-<meta name="description" content="Corpstop helps contract water operators get every small system ready for the 1 Nov 2027 Lead and Copper Rule Improvements: portfolio readiness, field verification that works offline, annual notices and state filings.">
-<meta property="og:title" content="Corpstop">
+<title>LineTally: lead service line compliance for water operators</title>
+<meta name="description" content="LineTally helps contract water operators get every small system ready for the 1 Nov 2027 Lead and Copper Rule Improvements: portfolio readiness, field verification that works offline, annual notices and state filings.">
+<meta property="og:title" content="LineTally">
 <meta property="og:description" content="Every service line accounted for, across every system you run. Built for the 1 Nov 2027 LCRI deadline.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="assets/portfolio.jpg">
+<meta property="og:image" content="https://linetally.com/assets/portfolio.jpg">
+<meta property="og:url" content="https://linetally.com/">
+<link rel="canonical" href="https://linetally.com/">
 <meta name="color-scheme" content="light dark">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%231f6f9a' stroke-width='5'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23b4582b'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-/* Corpstop marketing page: same identity as the app (steel blue, copper, pipe-material colors). */
+/* LineTally marketing page: same identity as the app (steel blue, copper, pipe-material colors). */
 :root {
   --bg: #f3f6f8; --surface: #ffffff; --sunk: #e6edf1; --ink: #15232d; --muted: #52636e; --line: #d6dfe5;
   --water: #1f6f9a; --water-ink: #ffffff; --copper: #b4582b; --deep: #0f2a3a; --deep-ink: #e6f0f6;
@@ -102,8 +104,14 @@ p { margin: 0; }
 .pricing-foot { margin-top: 22px; color: var(--muted); font-size: .95rem; display: flex; flex-wrap: wrap; gap: 6px 24px; }
 @media (max-width: 900px) { .plans { grid-template-columns: 1fr; max-width: 460px; } }
 
+/* demo video */
+.demo { padding-top: 24px; }
+.demo-frame { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: #0f2a3a; box-shadow: 0 24px 60px -28px rgb(15 42 58 / .55); aspect-ratio: 16 / 9; max-width: 100%; }
+.demo-frame video { width: 100%; height: 100%; display: block; object-fit: contain; background: #0f2a3a; }
+.demo-meta { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 12px; color: var(--muted); font-size: .9rem; }
+
 /* sections */
-section { padding: 72px 0; }
+section { padding: 72px 0; scroll-margin-top: 64px; }
 .sec-head { display: flex; flex-direction: column; gap: 10px; max-width: 720px; margin-bottom: 36px; }
 .sec-head h2 { font-size: clamp(2rem, 4.6vw, 3rem); }
 .sec-head p { color: var(--muted); font-size: 1.1rem; }
@@ -171,8 +179,9 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: s
 
 <header class="nav">
   <div class="wrap">
-    <a class="brand" href="#top" aria-label="Corpstop home"><span class="logo" aria-hidden="true"></span><b>Corpstop</b></a>
+    <a class="brand" href="#top" aria-label="LineTally home"><span class="logo" aria-hidden="true"></span><b>LineTally</b></a>
     <nav class="nav-links" aria-label="Page sections">
+      <a href="#demo">Demo</a>
       <a href="#features">Features</a>
       <a href="#field">Field work</a>
       <a href="#how">How it works</a>
@@ -190,10 +199,10 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: s
         <div>
           <div class="eyebrow">For contract water operators · Lead and Copper Rule Improvements</div>
           <h1>Every service line accounted for, in <em>every system</em> you run.</h1>
-          <p class="lede">Corpstop is one console for getting a whole portfolio of small water systems ready for the 1 Nov 2027 LCRI compliance date, then keeping them there: inventories, field verification, annual notices and state filings.</p>
+          <p class="lede">LineTally is one console for getting a whole portfolio of small water systems ready for the 1 Nov 2027 LCRI compliance date, then keeping them there: inventories, field verification, annual notices and state filings.</p>
           <div class="cta-row">
             <a class="btn btn--primary" data-app-link href="#start">Get started</a>
-            <a class="btn" href="#how">See how it works</a>
+            <a class="btn" href="#demo">Watch the 1-minute demo</a>
           </div>
         </div>
         <div class="countdown" aria-live="polite">
@@ -205,10 +214,30 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: s
         <i style="flex:8;background:var(--lead)"></i><i style="flex:5;background:var(--grr)"></i><i style="flex:26;background:var(--unk)"></i><i style="flex:61;background:var(--ok)"></i>
       </div>
       <figure class="shot" style="margin-left:0;margin-right:0">
-        <img src="assets/portfolio.jpg" width="2560" height="1600" alt="Corpstop portfolio view: seven example water systems with readiness status, service-line material mix, unknown lines, year-one replacement targets, plan and notice status.">
+        <img src="assets/portfolio.jpg" width="2560" height="1600" alt="LineTally portfolio view: seven example water systems with readiness status, service-line material mix, unknown lines, year-one replacement targets, plan and notice status.">
       </figure>
     </div>
   </div>
+
+  <section id="demo" class="demo" aria-labelledby="demo-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Demo · 1 minute</div>
+        <h2 id="demo-h">See the office and the field work together.</h2>
+        <p>The portfolio, assigning unknown lines, a tech recording a visit on their phone, and the branded report at the end.</p>
+      </div>
+      <div class="demo-frame">
+        <video controls playsinline preload="metadata" poster="assets/demo-poster.jpg" width="1280" height="720" aria-describedby="demo-desc">
+          <source src="assets/linetally-demo.mp4" type="video/mp4">
+          Your browser can't play this video. <a href="assets/linetally-demo.mp4">Download the demo (MP4, 1.7 MB)</a>.
+        </video>
+      </div>
+      <div class="demo-meta" id="demo-desc">
+        <span>Captioned, no sound.</span>
+        <span>Shows example data, not real water systems.</span>
+      </div>
+    </div>
+  </section>
 
   <section class="rule" aria-labelledby="rule-h">
     <div class="wrap">
@@ -228,7 +257,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: s
   <section id="features" aria-labelledby="features-h">
     <div class="wrap">
       <div class="sec-head">
-        <div class="eyebrow">What Corpstop does</div>
+        <div class="eyebrow">What LineTally does</div>
         <h2 id="features-h">Built for the operator who runs many systems, not the utility that runs one.</h2>
       </div>
       <div class="features">
@@ -254,7 +283,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: s
           <li><div><b>Counts move by themselves</b><span>Each identified line updates the system's inventory and its replacement target.</span></div></li>
         </ul>
       </div>
-      <div class="phone"><img src="assets/field.jpg" width="1082" height="2202" alt="Corpstop on a phone: recording a visit to 126 Depot Rd as non-lead, identified by potholing, with notes and photo buttons." loading="lazy"></div>
+      <div class="phone"><img src="assets/field.jpg" width="1082" height="2202" alt="LineTally on a phone: recording a visit to 126 Depot Rd as non-lead, identified by potholing, with notes and photo buttons." loading="lazy"></div>
     </div>
   </section>
 
@@ -339,7 +368,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: s
       </div>
       <div class="pricing-foot">
         <span><b>More than 50 systems?</b> Sign up and we'll set up a plan sized to your portfolio.</span>
-        <span>Prices in US dollars. A system counts once it's added to Corpstop.</span>
+        <span>Prices in US dollars. A system counts once it's added to LineTally.</span>
       </div>
     </div>
   </section>
@@ -353,8 +382,8 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: s
       <div class="faq">
         <details><summary>Does it work without cell signal?</summary><p>Yes, once the app has been opened with signal. Assignments stay on the phone, and visits recorded with no signal upload automatically when it comes back.</p></details>
         <details><summary>Who can see our data?</summary><p>Only people on your team. A personal account's systems are visible only to that person. Field photos are private files, opened through links that expire after ten minutes.</p></details>
-        <details><summary>Is Corpstop compliance advice?</summary><p>No. Readiness checks and targets are planning aids. Confirm requirements with your state primacy agency.</p></details>
-        <details><summary>Do we need to install anything?</summary><p>No. Corpstop runs in the browser on desktop and phone. Field techs can add it to their home screen.</p></details>
+        <details><summary>Is LineTally compliance advice?</summary><p>No. Readiness checks and targets are planning aids. Confirm requirements with your state primacy agency.</p></details>
+        <details><summary>Do we need to install anything?</summary><p>No. LineTally runs in the browser on desktop and phone. Field techs can add it to their home screen.</p></details>
         <details><summary>Does it file with my state directly?</summary><p>Not yet. It prepares each state's inventory as a CSV for you to submit. State-specific templates are on the roadmap.</p></details>
         <details><summary>Can techs take photos in the app?</summary><p>Yes. The in-app camera takes up to five photos per visit, or techs can pick them from their photo library.</p></details>
       </div>
@@ -369,7 +398,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: s
         <p>Sign up, load the example data to look around, then add your own systems.</p>
       </div>
       <div class="cta-row">
-        <a class="btn btn--primary" data-app-link href="#start">Open Corpstop</a>
+        <a class="btn btn--primary" data-app-link href="#start">Open LineTally</a>
       </div>
     </div>
   </section>
@@ -377,13 +406,13 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: s
 
 <footer>
   <div class="wrap">
-    <span>© <span id="year">2026</span> Corpstop</span>
+    <span>© <span id="year">2026</span> SKC Software Solutions · LineTally</span>
     <span>Not affiliated with the U.S. EPA. Readiness and targets are planning aids, not compliance advice.</span>
   </div>
 </footer>
 
 <script>
-  // Where "Get started" and "Open Corpstop" go: the live Corpstop app.
+  // Where "Get started" and "Open LineTally" go: the live LineTally app.
   // Set this to the app's address (for example https://your-app.base44.app).
   const APP_URL = "https://corpstop.base44.app";
 
