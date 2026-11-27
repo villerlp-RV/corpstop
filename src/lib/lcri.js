@@ -206,3 +206,25 @@ export function exampleLines(sys, systemId, perSystem = 10) {
   }
   return out;
 }
+
+// Ten-year replacement schedule from the compliance date: an average of 10% of
+// the replacement pool per year, cumulative, rounded up. Confirm deferred
+// deadlines or a different pace with the state before relying on it.
+export function replacementSchedule(pool, startYear = 2027, years = 10) {
+  const n = Math.max(0, Math.round(Number(pool) || 0));
+  const rows = [];
+  let prev = 0;
+  for (let k = 1; k <= years; k++) {
+    const cumulative = Math.min(n, Math.ceil(n * REPLACEMENT_RATE * k - 1e-9));
+    rows.push({
+      year: k,
+      from: `Nov 1, ${startYear + k - 1}`,
+      to: `Oct 31, ${startYear + k}`,
+      annual: cumulative - prev,
+      cumulative,
+      percent: n ? Math.round((cumulative / n) * 100) : 0,
+    });
+    prev = cumulative;
+  }
+  return rows;
+}

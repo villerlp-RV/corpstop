@@ -104,11 +104,12 @@ export async function renderReportPdf(report) {
   font(20, "bold");
   const titleLines = doc.splitTextToSize(report.subtitle, CW - 120);
   doc.text(titleLines, M, y);
-  if (report.status) {
-    const label = report.status.label.toUpperCase();
-    font(9, "bold", STATUS[report.status.key]);
+  const pill = report.status || (report.kind === "plan" ? { label: "Draft", key: "at_risk" } : null);
+  if (pill) {
+    const label = pill.label.toUpperCase();
+    font(9, "bold", STATUS[pill.key]);
     const pw = doc.getTextWidth(label) + 22;
-    doc.setDrawColor(...STATUS[report.status.key]);
+    doc.setDrawColor(...STATUS[pill.key]);
     doc.setLineWidth(1);
     doc.roundedRect(right - pw, y - 13, pw, 18, 9, 9, "S");
     doc.text(label, right - pw / 2, y, { align: "center" });
@@ -250,6 +251,73 @@ export async function renderReportPdf(report) {
         y += body.length * 12 + 8;
       }
     }
+  } else if (report.kind === "plan") {
+    const para = (text, size = 10) => {
+      font(size, "normal");
+      const body = doc.splitTextToSize(text, CW);
+      for (const line of body) {
+        ensure(14);
+        doc.text(line, M, y);
+        y += 13.5;
+      }
+      y += 5;
+    };
+    const toComplete = (items) => {
+      font(9.5, "normal");
+      const wrapped = items.map((s) => doc.splitTextToSize(s, CW - 40));
+      const h = 26 + wrapped.reduce((a, w) => a + w.length * 12.5 + 4, 0);
+      ensure(Math.min(h, BOTTOM - M));
+      doc.setFillColor(253, 244, 237);
+      doc.setDrawColor(180, 88, 43);
+      doc.setLineWidth(0.8);
+      doc.roundedRect(M, y - 4, CW, h, 4, 4, "FD");
+      font(8, "bold", [180, 88, 43]);
+      doc.text("TO COMPLETE", M + 12, y + 10, { charSpace: 0.6 });
+      let yy = y + 26;
+      font(9.5, "normal");
+      for (const w of wrapped) {
+        doc.rect(M + 14, yy - 7.5, 7, 7, "S");
+        doc.text(w, M + 28, yy);
+        yy += w.length * 12.5 + 4;
+      }
+      y += h + 12;
+    };
+    report.sections.forEach((s, i) => {
+      ensure(90);
+      font(12, "bold");
+      doc.text(`${i + 1}. ${s.title}`, M, y);
+      if (s.cite) {
+        font(8.5, "normal", WATER);
+        doc.text(`40 CFR ${s.cite}`, right, y, { align: "right" });
+      }
+      doc.setDrawColor(...WATER);
+      doc.setLineWidth(1.5);
+      doc.line(M, y + 6, M + 28, y + 6);
+      y += 22;
+      for (const p of s.paragraphs || []) para(p);
+      if (s.complete?.length) toComplete(s.complete);
+      y += 4;
+      if (s.cite === "§ 141.84(c)(1)(x)") {
+        heading("Replacement schedule (minimum pace)");
+        table(report.schedule);
+      }
+    });
+    heading("Appendix: service lines on file, in proposed order");
+    if (report.priority.rows.length) table(report.priority);
+    font(9, "normal", MUTED);
+    ensure(16);
+    doc.text(report.priority.note, M, y);
+    y += 22;
+    heading("Keeping the plan current");
+    for (const c of report.closing) {
+      const body = doc.splitTextToSize(c, CW - 16);
+      ensure(body.length * 13 + 6);
+      font(10, "normal");
+      doc.text("•", M + 2, y);
+      doc.text(body, M + 16, y);
+      y += body.length * 13 + 6;
+    }
+    y += 6;
   } else {
     heading("Systems");
     table(report.systems);

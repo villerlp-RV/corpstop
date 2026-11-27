@@ -48,3 +48,18 @@ test("portfolio report content", () => {
   assert.ok(Math.abs(r.systems.widths.reduce((a, b) => a + b, 0) - 1) < 1e-9);
   assert.equal(r.systems.columns.length, r.systems.widths.length);
 });
+
+test("replacement plan covers every required element and the schedule", async () => {
+  const { replacementPlan } = await import("../src/lib/report.js");
+  const r = replacementPlan(system, lines, profile, { now: NOW, preparedBy: "Dana Ops" });
+  assert.equal(r.kind, "plan");
+  assert.equal(r.filename, "cedar-hollow-water-district-service-line-replacement-plan-draft-2026-11-27.pdf");
+  const cites = r.sections.map((s) => s.cite).filter(Boolean);
+  assert.deepEqual(cites, ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"].map((n) => `§ 141.84(c)(1)(${n})`));
+  assert.deepEqual(r.tiles[0], ["Replacement pool", "191"]);
+  assert.deepEqual(r.tiles.at(-1), ["Complete by", "Oct 2037"]);
+  assert.equal(r.schedule.rows.length, 10);
+  assert.deepEqual(r.schedule.rows[0], ["Year 1", "Nov 1, 2027 – Oct 31, 2028", "20", "20", "10%"]);
+  assert.deepEqual(r.priority.rows.map((x) => x[1]), ["1 Elm Ct", "5 Oak Ln"], "lead, then unknown; non-lead lines are left out");
+  assert.match(r.sections[0].paragraphs[1], /191 service lines/);
+});
