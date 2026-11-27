@@ -77,6 +77,31 @@ p { margin: 0; }
 
 .shot { margin-top: 36px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 20px 50px -24px rgb(15 42 58 / .45); background: var(--surface); }
 
+/* pricing */
+.billing { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 4px; background: var(--surface); margin-bottom: 28px; }
+.billing button { border: none; background: none; font: inherit; font-weight: 600; color: var(--muted); padding: 8px 18px; border-radius: 999px; cursor: pointer; min-height: 40px; }
+.billing button[aria-pressed="true"] { background: var(--water); color: var(--water-ink); }
+.billing .save { font-family: var(--f-mono); font-size: .72rem; margin-left: 6px; color: inherit; opacity: .85; }
+.plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+.plan { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 26px 24px; display: flex; flex-direction: column; gap: 14px; position: relative; min-width: 0; }
+.plan--pick { border: 2px solid var(--water); box-shadow: 0 18px 40px -24px rgb(15 42 58 / .45); }
+.plan .badge { position: absolute; top: -12px; left: 24px; background: var(--water); color: var(--water-ink); font-family: var(--f-mono); font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; padding: 3px 10px; border-radius: 999px; }
+.plan h3 { font-size: 1.6rem; }
+.plan .systems { color: var(--muted); }
+.price { display: flex; align-items: baseline; gap: 6px; }
+.price b { font-family: var(--f-display); font-size: 3.2rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.price span { color: var(--muted); }
+.price-note { font-size: .9rem; color: var(--muted); min-height: 1.4em; }
+.plan .btn { justify-content: center; margin-top: auto; }
+.plan .fit { color: var(--ink); flex: 1; }
+.included { margin-top: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px 24px; display: grid; grid-template-columns: auto 1fr; gap: 10px 28px; align-items: start; }
+.included ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px 20px; }
+.included li { display: grid; grid-template-columns: 18px 1fr; gap: 8px; }
+.included li::before { content: "✓"; color: var(--ok); font-weight: 700; }
+@media (max-width: 700px) { .included { grid-template-columns: 1fr; } }
+.pricing-foot { margin-top: 22px; color: var(--muted); font-size: .95rem; display: flex; flex-wrap: wrap; gap: 6px 24px; }
+@media (max-width: 900px) { .plans { grid-template-columns: 1fr; max-width: 460px; } }
+
 /* sections */
 section { padding: 72px 0; }
 .sec-head { display: flex; flex-direction: column; gap: 10px; max-width: 720px; margin-bottom: 36px; }
@@ -151,6 +176,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: s
       <a href="#features">Features</a>
       <a href="#field">Field work</a>
       <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
       <a href="#faq">FAQ</a>
       <a class="btn btn--primary" data-app-link href="#start">Get started</a>
     </nav>
@@ -261,6 +287,63 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: s
     </div>
   </section>
 
+  <section id="pricing" aria-labelledby="pricing-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Pricing</div>
+        <h2 id="pricing-h">Priced by the systems you run. Bring your whole team.</h2>
+        <p>Every plan includes every feature and unlimited users, so office staff and field techs never count against you.</p>
+      </div>
+      <div class="billing" role="group" aria-label="Billing period">
+        <button type="button" data-period="monthly" aria-pressed="true">Monthly</button>
+        <button type="button" data-period="annual" aria-pressed="false">Annual <span class="save">2 months free</span></button>
+      </div>
+      <div class="plans">
+        <div class="plan">
+          <h3>Starter</h3>
+          <span class="systems">Up to 5 water systems</span>
+          <div class="price"><b data-monthly="149" data-annual="124">$149</b><span>/ month</span></div>
+          <p class="price-note" data-monthly-note="Billed monthly" data-annual-note="$1,490 billed yearly">Billed monthly</p>
+          <p class="fit">A single district, or an operator starting out.</p>
+          <a class="btn" data-app-link href="#start">Get started</a>
+        </div>
+        <div class="plan plan--pick">
+          <span class="badge">Most popular</span>
+          <h3>Operator</h3>
+          <span class="systems">Up to 20 water systems</span>
+          <div class="price"><b data-monthly="399" data-annual="333">$399</b><span>/ month</span></div>
+          <p class="price-note" data-monthly-note="Billed monthly" data-annual-note="$3,990 billed yearly">Billed monthly</p>
+          <p class="fit">A typical contract operator or engineering firm.</p>
+          <a class="btn btn--primary" data-app-link href="#start">Get started</a>
+        </div>
+        <div class="plan">
+          <h3>Portfolio</h3>
+          <span class="systems">Up to 50 water systems</span>
+          <div class="price"><b data-monthly="799" data-annual="666">$799</b><span>/ month</span></div>
+          <p class="price-note" data-monthly-note="Billed monthly" data-annual-note="$7,990 billed yearly">Billed monthly</p>
+          <p class="fit">Rural water associations and large client portfolios.</p>
+          <a class="btn" data-app-link href="#start">Get started</a>
+        </div>
+      </div>
+      <div class="included">
+        <b>Every plan includes</b>
+        <ul>
+          <li>Portfolio readiness for 1 Nov 2027</li>
+          <li>Field work assignments and live office–field sync</li>
+          <li>Offline recording on the phone</li>
+          <li>In-app camera, up to 5 photos per visit</li>
+          <li>Annual notice batches</li>
+          <li>State inventory CSV exports</li>
+          <li>Team accounts with unlimited users</li>
+        </ul>
+      </div>
+      <div class="pricing-foot">
+        <span><b>More than 50 systems?</b> Sign up and we'll set up a plan sized to your portfolio.</span>
+        <span>Prices in US dollars. A system counts once it's added to Corpstop.</span>
+      </div>
+    </div>
+  </section>
+
   <section id="faq" aria-labelledby="faq-h">
     <div class="wrap">
       <div class="sec-head">
@@ -312,6 +395,16 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: s
   if (days > 0) el.textContent = days.toLocaleString("en-US");
   else { el.textContent = "Now"; el.nextElementSibling.textContent = "LCRI compliance date has passed"; }
   document.getElementById("year").textContent = new Date().getFullYear();
+  // Monthly / annual prices on the pricing cards.
+  document.querySelectorAll("[data-period]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const period = btn.dataset.period;
+      document.querySelectorAll("[data-period]").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+      document.querySelectorAll(".price b").forEach((b) => { b.textContent = "$" + b.dataset[period]; });
+      document.querySelectorAll(".price-note").forEach((n) => { n.textContent = n.dataset[period + "Note"]; });
+    });
+  });
+
 </script>
 </body>
 </html>
