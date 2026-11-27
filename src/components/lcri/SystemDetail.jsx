@@ -10,6 +10,8 @@ import SystemForm from "@/components/lcri/SystemForm";
 import ReportButton from "@/components/lcri/ReportButton";
 import ImportLines from "@/components/lcri/ImportLines";
 import { LineAttachments } from "@/components/lcri/Attachments";
+import { FilterBar } from "@/components/lcri/FilterBar";
+import { EMPTY_LINE_FILTER, LINE_FILTER_OPTIONS, filterLines, isFiltered } from "@/lib/filters";
 import { ConnectorCell, LineDetails, MaterialCell, NonLeadTypeSelect } from "@/components/lcri/pipe-bits";
 import { connectorSummary } from "@/lib/pipes";
 import { replacementPlan, systemReport } from "@/lib/report";
@@ -110,6 +112,8 @@ export default function SystemDetail({ id }) {
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [scheduled, setScheduled] = useState("");
+  const [lineFilter, setLineFilter] = useState(EMPTY_LINE_FILTER);
+  const setF = (k) => (v) => setLineFilter((f) => ({ ...f, [k]: v }));
 
   const loadLines = useCallback(async () => {
     try {
@@ -144,6 +148,15 @@ export default function SystemDetail({ id }) {
   const target = yearOneTarget(system);
   const sched = system.replacements_scheduled || 0;
   const items = checklist(system);
+  const shownLines = filterLines(lines || [], lineFilter);
+  const filtering = isFiltered(lineFilter);
+  const allShownSelected = shownLines.length > 0 && shownLines.every((l) => selected.has(l.id));
+  const toggleShown = () =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      for (const l of shownLines) (allShownSelected ? next.delete(l.id) : next.add(l.id));
+      return next;
+    });
 
   const save = async (patch, message) => {
     try {
@@ -337,6 +350,27 @@ export default function SystemDetail({ id }) {
             <ImportLines system={system} teamId={teamId} updateSystem={updateSystem} onDone={loadLines} />
           </div>
         )}
+        {lines && lines.length > 0 && (
+          <div className="card-sub">
+            <FilterBar
+              label="Filter service lines"
+              query={lineFilter.q}
+              onQuery={setF("q")}
+              placeholder="Search address or person"
+              selects={[
+                { id: "f-material", label: "Material", value: lineFilter.material, onChange: setF("material"), options: [["", "Any material"], ...MATERIALS.map((m) => [m.value, m.label])] },
+                { id: "f-connector", label: "Connector", value: lineFilter.connector, onChange: setF("connector"), options: LINE_FILTER_OPTIONS.connector },
+                { id: "f-visit", label: "Field status", value: lineFilter.visit, onChange: setF("visit"), options: LINE_FILTER_OPTIONS.visit },
+                { id: "f-has", label: "Photos, files and more", value: lineFilter.has, onChange: setF("has"), options: LINE_FILTER_OPTIONS.has },
+              ]}
+              shown={fmt(shownLines.length)}
+              total={fmt(lines.length)}
+              noun="lines"
+              active={filtering}
+              onClear={() => setLineFilter(EMPTY_LINE_FILTER)}
+            />
+          </div>
+        )}
         {selected.size > 0 && can.edit && (
           <div className="card-sub assign-bar" role="region" aria-label="Assign selected lines">
             <b>{selected.size} selected</b>
@@ -358,12 +392,16 @@ export default function SystemDetail({ id }) {
           <table>
             <thead>
               <tr>
-                {can.edit && <th className="sel"><span className="sr-only">Select</span></th>}
+                {can.edit && (
+                  <th className="sel">
+                    <input type="checkbox" checked={allShownSelected} onChange={toggleShown} disabled={!shownLines.length} aria-label={filtering ? "Select all shown lines" : "Select all lines"} />
+                  </th>
+                )}
                 <th>Address</th><th>Material</th><th>Connector</th><th>How identified</th><th>Field visit</th><th>Photos &amp; files</th><th>Record here</th>
               </tr>
             </thead>
             <tbody>
-              {(lines || []).map((l) => (
+              {shownLines.map((l) => (
                 <tr key={l.id} className={selected.has(l.id) ? "is-selected" : undefined}>
                   {can.edit && (
                     <td className="sel">
@@ -379,6 +417,14 @@ export default function SystemDetail({ id }) {
                   <td>{l.material === "unknown" && can.edit ? <VerifyControls line={l} onSave={verifyLine} /> : <span className="muted">—</span>}</td>
                 </tr>
               ))}
+              {filtering && lines?.length > 0 && shownLines.length === 0 && (
+                <tr>
+                  <td colSpan={can.edit ? 8 : 7} className="muted">
+                    No lines match these filters.{" "}
+                    <button type="button" className="linkbtn" onClick={() => setLineFilter(EMPTY_LINE_FILTER)}>Clear filters</button>
+                  </td>
+                </tr>
+              )}
               {lines && lines.length === 0 && (
                 <tr><td colSpan={can.edit ? 8 : 7} className="muted">No individual lines on file yet. Add lines as you visit them in the field.</td></tr>
               )}
