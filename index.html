@@ -102,8 +102,14 @@ p { margin: 0; }
 .pricing-foot { margin-top: 22px; color: var(--muted); font-size: .95rem; display: flex; flex-wrap: wrap; gap: 6px 24px; }
 @media (max-width: 900px) { .plans { grid-template-columns: 1fr; max-width: 460px; } }
 
+/* demo video */
+.demo { padding-top: 24px; }
+.demo-frame { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: #0f2a3a; box-shadow: 0 24px 60px -28px rgb(15 42 58 / .55); aspect-ratio: 16 / 9; max-width: 100%; }
+.demo-frame video { width: 100%; height: 100%; display: block; object-fit: contain; background: #0f2a3a; }
+.demo-meta { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 12px; color: var(--muted); font-size: .9rem; }
+
 /* sections */
-section { padding: 72px 0; }
+section { padding: 72px 0; scroll-margin-top: 64px; }
 .sec-head { display: flex; flex-direction: column; gap: 10px; max-width: 720px; margin-bottom: 36px; }
 .sec-head h2 { font-size: clamp(2rem, 4.6vw, 3rem); }
 .sec-head p { color: var(--muted); font-size: 1.1rem; }
@@ -173,6 +179,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: s
   <div class="wrap">
     <a class="brand" href="#top" aria-label="Corpstop home"><span class="logo" aria-hidden="true"></span><b>Corpstop</b></a>
     <nav class="nav-links" aria-label="Page sections">
+      <a href="#demo">Demo</a>
       <a href="#features">Features</a>
       <a href="#field">Field work</a>
       <a href="#how">How it works</a>
@@ -193,7 +200,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: s
           <p class="lede">Corpstop is one console for getting a whole portfolio of small water systems ready for the 1 Nov 2027 LCRI compliance date, then keeping them there: inventories, field verification, annual notices and state filings.</p>
           <div class="cta-row">
             <a class="btn btn--primary" data-app-link href="#start">Get started</a>
-            <a class="btn" href="#how">See how it works</a>
+            <a class="btn" href="#demo">Watch the 1-minute demo</a>
           </div>
         </div>
         <div class="countdown" aria-live="polite">
@@ -209,6 +216,26 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: s
       </figure>
     </div>
   </div>
+
+  <section id="demo" class="demo" aria-labelledby="demo-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Demo · 1 minute</div>
+        <h2 id="demo-h">See the office and the field work together.</h2>
+        <p>The portfolio, assigning unknown lines, a tech recording a visit on their phone, and the branded report at the end.</p>
+      </div>
+      <div class="demo-frame">
+        <video controls playsinline preload="metadata" poster="assets/demo-poster.jpg" width="1280" height="720" aria-describedby="demo-desc">
+          <source src="assets/corpstop-demo.mp4" type="video/mp4">
+          Your browser can't play this video. <a href="assets/corpstop-demo.mp4">Download the demo (MP4, 1.7 MB)</a>.
+        </video>
+      </div>
+      <div class="demo-meta" id="demo-desc">
+        <span>Captioned, no sound.</span>
+        <span>Shows example data, not real water systems.</span>
+      </div>
+    </div>
+  </section>
 
   <section class="rule" aria-labelledby="rule-h">
     <div class="wrap">
