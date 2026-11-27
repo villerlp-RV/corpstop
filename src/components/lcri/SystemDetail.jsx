@@ -8,6 +8,7 @@ import { notify } from "@/components/lcri/notify";
 import { MaterialBar, Modal, ReadinessPill, Swatch } from "@/components/lcri/bits";
 import SystemForm from "@/components/lcri/SystemForm";
 import ReportButton from "@/components/lcri/ReportButton";
+import ImportLines from "@/components/lcri/ImportLines";
 import { replacementPlan, systemReport } from "@/lib/report";
 import { AddLinePhotos, AssignmentCell, PhotoGallery } from "@/components/lcri/field-bits";
 import { useMembers } from "@/components/lcri/useMembers";
@@ -313,7 +314,12 @@ export default function SystemDetail({ id }) {
           <b id="lines-h">Service lines</b>
           <span className="muted">{lines ? `${fmt(lines.length)} on file of ${fmt(totalLines(system))} in inventory` : "Loading…"}</span>
         </div>
-        {can.write && <div className="card-sub"><AddLineForm onAdd={addLine} /></div>}
+        {can.write && (
+          <div className="card-sub add-row">
+            <AddLineForm onAdd={addLine} />
+            <ImportLines system={system} teamId={teamId} updateSystem={updateSystem} onDone={loadLines} />
+          </div>
+        )}
         {selected.size > 0 && can.edit && (
           <div className="card-sub assign-bar" role="region" aria-label="Assign selected lines">
             <b>{selected.size} selected</b>
