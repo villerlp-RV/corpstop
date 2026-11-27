@@ -22,7 +22,7 @@ test("plans an import with duplicates, blanks and warnings", () => {
   const csv = "Service Address,Line Material,How identified\n12 Oak Street,Copper,Tap card\n12 oak st.,lead,\n,lead,\n14 Oak St,weird,\n16 Oak St,Lead,\n";
   const plan = planImport(csv, ["16 OAK ST"]);
   assert.deepEqual(plan.lines, [
-    { address: "12 Oak Street", material: "non_lead", identification_method: "Tap card" },
+    { address: "12 Oak Street", material: "non_lead", material_type: "copper", identification_method: "Tap card" },
     { address: "14 Oak St", material: "unknown", identification_method: "" },
   ]);
   assert.deepEqual(plan.skipped.map((s) => [s.row, s.reason]), [[3, "Already on file or repeated"], [4, "No address"], [6, "Already on file or repeated"]]);
@@ -47,7 +47,21 @@ test("a plain list of addresses with no header works", () => {
 
 test("the template imports cleanly", () => {
   const plan = planImport(IMPORT_TEMPLATE);
-  assert.deepEqual(importTally(plan.lines), { lead: 1, grr: 0, unknown: 1, non_lead: 1 });
+  assert.deepEqual(importTally(plan.lines), { lead: 1, grr: 1, unknown: 1, non_lead: 1 });
   assert.equal(plan.skipped.length + plan.warnings.length, 0);
   assert.equal(addressKey("12 Oak Avenue"), addressKey("12 oak ave."));
+});
+
+test("reads connectors and split ownership columns", () => {
+  const csv = "Address,Material,Gooseneck,System Side Material,Customer Side Material\n" +
+    "1 A St,PVC,No connector,,\n" +
+    "2 A St,,lead,copper,lead\n" +
+    "3 A St,lead,maybe,,\n" +
+    "4 A St,,,non-lead,\n";
+  const plan = planImport(csv);
+  assert.deepEqual(plan.lines[0], { address: "1 A St", material: "non_lead", material_type: "plastic", connector: "none", identification_method: "Records review" });
+  assert.deepEqual(plan.lines[1], { address: "2 A St", ownership: "split", system_side: "non_lead", customer_side: "lead", material: "lead", material_type: "copper", connector: "lead", identification_method: "Records review" });
+  assert.equal(plan.lines[2].connector, undefined);
+  assert.match(plan.warnings[0].reason, /Connector "maybe" not recognised/);
+  assert.deepEqual([plan.lines[3].system_side, plan.lines[3].customer_side, plan.lines[3].material], ["non_lead", "unknown", "unknown"]);
 });

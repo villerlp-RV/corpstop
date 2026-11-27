@@ -20,7 +20,14 @@ export function queuedVisit({ line, input, photos, user, now = new Date() }) {
     lineId: line.id,
     systemId: line.system_id,
     address: line.address,
-    input: { material: input.material, method: input.method, notes: input.notes || "" },
+    input: {
+      material: input.material,
+      method: input.method,
+      notes: input.notes || "",
+      ...(input.ownership ? { ownership: input.ownership, system_side: input.system_side, customer_side: input.customer_side } : {}),
+      ...(input.material_type ? { material_type: input.material_type } : {}),
+      ...(input.connector !== undefined ? { connector: input.connector } : {}),
+    },
     photos: photos || [], // Blobs; IndexedDB stores them as-is
     user: { full_name: user?.full_name || "", email: user?.email || "" },
     recordedAt: now.toISOString(),

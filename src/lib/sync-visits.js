@@ -39,7 +39,7 @@ export async function syncVisit(base44, store, item) {
   // Move the system's count from whatever the line was on the server just now.
   const system = await base44.entities.WaterSystem.get(item.systemId).catch(() => null);
   if (system) {
-    const counts = countsAfterChange(system, fromMaterial, item.input.material);
+    const counts = countsAfterChange(system, fromMaterial, patch.material);
     if (Object.keys(counts).length) await base44.entities.WaterSystem.update(system.id, counts);
   }
   await store.remove(item.id);

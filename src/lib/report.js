@@ -1,6 +1,7 @@
 // What goes into a PDF report. Pure functions (no PDF library), unit-tested;
 // src/lib/report-pdf.js draws the result.
 import { READINESS, checklist, counts, fmt, formatDate, noticeCurrent, portfolioSummary, readiness, replacementPool, replacementSchedule, totalLines, unknownShare, yearOneTarget } from "./lcri.js";
+import { connectorOf, connectorSummary, materialText } from "./pipes.js";
 import { materialOf } from "./lcri.js";
 import { photosOf } from "./fieldwork.js";
 
@@ -68,17 +69,20 @@ export function systemReport(system, lines, profile, { now = new Date(), prepare
       ["Replacements scheduled", fmt(system.replacements_scheduled || 0)],
     ],
     lines: {
-      columns: ["Address", "Material", "How identified", "Verified", "Field visit", "Photos"],
-      widths: [0.25, 0.11, 0.17, 0.18, 0.19, 0.1],
+      columns: ["Address", "Material", "Connector", "How identified", "Verified", "Field visit"],
+      widths: [0.19, 0.18, 0.13, 0.17, 0.15, 0.18],
       rows: sortedLines.map((l) => [
         l.address,
-        materialOf(l.material).label,
+        materialText(l),
+        connectorOf(l.connector)?.label || "—",
         l.identification_method || "—",
         [l.verified_date ? formatDate(l.verified_date) : "", l.verified_by || ""].filter(Boolean).join(" · ") || "—",
-        l.assignment_status === "done" ? `Recorded · ${l.assigned_to_name || ""}`.trim() : l.assignment_status === "open" ? `Open · ${l.assigned_to_name || ""}`.trim() : "—",
-        photosOf(l).length ? String(photosOf(l).length) : "—",
+        [
+          l.assignment_status === "done" ? `Recorded · ${l.assigned_to_name || ""}`.trim() : l.assignment_status === "open" ? `Open · ${l.assigned_to_name || ""}`.trim() : "",
+          photosOf(l).length ? `${photosOf(l).length} ${photosOf(l).length === 1 ? "photo" : "photos"}` : "",
+        ].filter(Boolean).join(" · ") || "—",
       ]),
-      note: `${fmt(lines.length)} service lines on file of ${fmt(t)} in the inventory. ${fmt(visited)} recorded in the field.`,
+      note: `${fmt(lines.length)} service lines on file of ${fmt(t)} in the inventory. ${fmt(visited)} recorded in the field. Connectors on file: ${connectorSummary(lines)}. Split-ownership lines take the category of their worst portion.`,
     },
     notes: sortedLines.filter((l) => l.field_notes).map((l) => [l.address, l.field_notes]),
     disclaimer: "Readiness and targets are planning aids based on the inventory recorded in LineTally, not compliance advice. Confirm requirements with your state primacy agency.",

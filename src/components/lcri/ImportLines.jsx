@@ -5,6 +5,7 @@ import { linesFor } from "@/lib/DataContext";
 import { Modal } from "@/components/lcri/bits";
 import { notify } from "@/components/lcri/notify";
 import { IMPORT_TEMPLATE, MAX_IMPORT_ROWS, importTally, planImport } from "@/lib/csv-import";
+import { connectorOf, materialText } from "@/lib/pipes";
 import { MATERIALS, fmt, todayIso, totalLines } from "@/lib/lcri";
 
 const CHUNK = 200;
@@ -96,7 +97,8 @@ export default function ImportLines({ system, teamId, onDone, updateSystem }) {
           <p className="muted">
             Upload a CSV with one service line per row. LineTally looks for an <b>address</b> column (or house number and
             street), and optionally <b>material</b> (lead, galvanized/GRR, unknown, non-lead, copper, plastic…) and{" "}
-            <b>identification method</b>. Addresses already on file are skipped.{" "}
+            <b>identification method</b>, <b>connector</b>, and <b>system-side</b> / <b>customer-side material</b> for split
+            ownership. Addresses already on file are skipped.{" "}
             <button type="button" className="linkbtn" onClick={downloadTemplate}>Download a template</button>
           </p>
           <label className="file-pick">
@@ -134,10 +136,10 @@ export default function ImportLines({ system, teamId, onDone, updateSystem }) {
                 <>
                   <div className="tbl-wrap">
                     <table>
-                      <thead><tr><th>Address</th><th>Material</th><th>How identified</th></tr></thead>
+                      <thead><tr><th>Address</th><th>Material</th><th>Connector</th><th>How identified</th></tr></thead>
                       <tbody>
                         {plan.lines.slice(0, 6).map((l) => (
-                          <tr key={l.address}><td>{l.address}</td><td>{MATERIALS.find((m) => m.value === l.material).label}</td><td>{l.identification_method || "—"}</td></tr>
+                          <tr key={l.address}><td>{l.address}</td><td>{materialText(l)}</td><td>{connectorOf(l.connector)?.label || "—"}</td><td>{l.identification_method || "—"}</td></tr>
                         ))}
                       </tbody>
                     </table>

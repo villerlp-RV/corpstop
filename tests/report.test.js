@@ -31,8 +31,10 @@ test("system report content", () => {
   assert.equal(r.checklist.length, 4);
   assert.deepEqual(r.pace[1], ["Year-1 replacement target (10%)", "20"]);
   assert.deepEqual(r.lines.rows.map((x) => x[0]), ["1 Elm Ct", "5 Oak Ln", "9 Main St"], "lead first, then unknown, then non-lead");
-  assert.deepEqual(r.lines.rows[2].slice(1), ["Non-lead", "Potholing", "Nov 20, 2026 · Jo Okafor", "Recorded · Jo Okafor", "2"]);
-  assert.equal(r.lines.rows[1][4], "Open · Ray Patel");
+  assert.deepEqual(r.lines.rows[2].slice(1), ["Non-lead", "—", "Potholing", "Nov 20, 2026 · Jo Okafor", "Recorded · Jo Okafor · 2 photos"]);
+  assert.equal(r.lines.rows[1][5], "Open · Ray Patel");
+  assert.equal(r.lines.columns.length, r.lines.widths.length);
+  assert.match(r.lines.note, /Connectors on file: 3 not recorded/);
   assert.deepEqual(r.notes, [["9 Main St", "Copper at curb stop"]]);
   assert.match(r.lines.note, /3 service lines on file of 503/);
   assert.ok(Math.abs(r.lines.widths.reduce((a, b) => a + b, 0) - 1) < 1e-9);
