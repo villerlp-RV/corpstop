@@ -76,7 +76,12 @@ export default function AppShell({ children }) {
       </main>
       <footer className="in foot">
         <span>Readiness and targets are planning aids, not compliance advice. Confirm requirements with your state primacy agency.</span>
-        <span className="foot-brand">LineTally · SKC Software Solutions</span>
+        <span className="foot-brand">
+          LineTally · SKC Software Solutions ·{" "}
+          <a href="https://linetally.com/privacy/" target="_blank" rel="noreferrer">Privacy</a> ·{" "}
+          <a href="https://linetally.com/terms/" target="_blank" rel="noreferrer">Terms</a> ·{" "}
+          <a href="https://linetally.com/support/" target="_blank" rel="noreferrer">Support</a>
+        </span>
       </footer>
     </div>
   );

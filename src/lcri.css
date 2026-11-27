@@ -295,3 +295,5 @@
 .lcri-app .foot { display: flex; flex-wrap: wrap; gap: 6px 24px; justify-content: space-between; }
 .lcri-app .foot-brand { font-weight: 600; white-space: nowrap; }
 .lcri-app .row-actions { display: inline-flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.lcri-app .foot-brand { white-space: normal; }
+.lcri-app .foot-brand a { color: var(--muted); }
