@@ -86,7 +86,7 @@ function AddLineForm({ onAdd }) {
 export default function SystemDetail({ id }) {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { systems, loading, updateSystem, reload, teamId, lineVersion } = useData();
+  const { systems, loading, updateSystem, reload, teamId, lineVersion, can } = useData();
   const members = useMembers();
   const [selected, setSelected] = useState(() => new Set());
   const [assignee, setAssignee] = useState("");
@@ -232,9 +232,9 @@ export default function SystemDetail({ id }) {
         </div>
         <div className="actions">
           <ReadinessPill status={readiness(system)} />
-          <ReportButton build={(profile, opts) => systemReport(system, lines || [], profile, opts)} disabled={lines === null} />
-          <ReportButton label="Replacement plan" done="Draft replacement plan downloaded" build={(profile, opts) => replacementPlan(system, lines || [], profile, opts)} disabled={lines === null} />
-          <button type="button" className="btn" onClick={() => setEditing(true)}><Pencil size={15} /> Edit</button>
+          {can.read && <ReportButton build={(profile, opts) => systemReport(system, lines || [], profile, opts)} disabled={lines === null} />}
+          {can.read && <ReportButton label="Replacement plan" done="Draft replacement plan downloaded" build={(profile, opts) => replacementPlan(system, lines || [], profile, opts)} disabled={lines === null} />}
+          {can.edit && <button type="button" className="btn" onClick={() => setEditing(true)}><Pencil size={15} /> Edit</button>}
         </div>
       </div>
 
@@ -262,22 +262,24 @@ export default function SystemDetail({ id }) {
                   {it.label}
                   <small>{it.detail}</small>
                 </div>
-                {it.key === "connectors" && (
+                {it.key === "connectors" && can.edit && (
                   <button type="button" className="btn btn--sm" onClick={() => save({ connectors_inventoried: !system.connectors_inventoried }, system.connectors_inventoried ? "Marked as not done" : "Connectors marked as inventoried")}>
                     {system.connectors_inventoried ? "Undo" : "Mark done"}
                   </button>
                 )}
-                {it.key === "plan" && (
+                {it.key === "plan" && (can.edit || can.read) && (
                   <span className="row-actions">
-                    {!system.plan_drafted && (
+                    {!system.plan_drafted && can.read && (
                       <ReportButton small label="Draft plan" done="Draft replacement plan downloaded" build={(profile, opts) => replacementPlan(system, lines || [], profile, opts)} disabled={lines === null} />
                     )}
-                    <button type="button" className="btn btn--sm" onClick={() => save({ plan_drafted: !system.plan_drafted }, system.plan_drafted ? "Marked as not drafted" : "Replacement plan marked as drafted")}>
-                      {system.plan_drafted ? "Undo" : "Mark drafted"}
-                    </button>
+                    {can.edit && (
+                      <button type="button" className="btn btn--sm" onClick={() => save({ plan_drafted: !system.plan_drafted }, system.plan_drafted ? "Marked as not drafted" : "Replacement plan marked as drafted")}>
+                        {system.plan_drafted ? "Undo" : "Mark drafted"}
+                      </button>
+                    )}
                   </span>
                 )}
-                {it.key === "notice" && !it.done && <Link className="btn btn--sm" to="/notices">Send</Link>}
+                {it.key === "notice" && !it.done && can.write && <Link className="btn btn--sm" to="/notices">Send</Link>}
               </li>
             ))}
           </ul>
@@ -292,7 +294,7 @@ export default function SystemDetail({ id }) {
           </span>
           <span className="inline-form">
             <label htmlFor="scheduled">Scheduled</label>
-            <input id="scheduled" type="number" min="0" className="num-input" value={scheduled} onChange={(e) => setScheduled(e.target.value)} onBlur={saveScheduled} onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()} />
+            <input id="scheduled" type="number" disabled={!can.edit} min="0" className="num-input" value={scheduled} onChange={(e) => setScheduled(e.target.value)} onBlur={saveScheduled} onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()} />
           </span>
         </div>
         <div className="pace-track" role="progressbar" aria-valuemin={0} aria-valuemax={target} aria-valuenow={Math.min(sched, target)} aria-label="Scheduled against year-1 target">
@@ -311,8 +313,8 @@ export default function SystemDetail({ id }) {
           <b id="lines-h">Service lines</b>
           <span className="muted">{lines ? `${fmt(lines.length)} on file of ${fmt(totalLines(system))} in inventory` : "Loading…"}</span>
         </div>
-        <div className="card-sub"><AddLineForm onAdd={addLine} /></div>
-        {selected.size > 0 && (
+        {can.write && <div className="card-sub"><AddLineForm onAdd={addLine} /></div>}
+        {selected.size > 0 && can.edit && (
           <div className="card-sub assign-bar" role="region" aria-label="Assign selected lines">
             <b>{selected.size} selected</b>
             <span className="inline-form">
@@ -333,33 +335,35 @@ export default function SystemDetail({ id }) {
           <table>
             <thead>
               <tr>
-                <th className="sel"><span className="sr-only">Select</span></th>
+                {can.edit && <th className="sel"><span className="sr-only">Select</span></th>}
                 <th>Address</th><th>Material</th><th>How identified</th><th>Field visit</th><th>Photos</th><th>Record here</th>
               </tr>
             </thead>
             <tbody>
               {(lines || []).map((l) => (
                 <tr key={l.id} className={selected.has(l.id) ? "is-selected" : undefined}>
-                  <td className="sel">
-                    <input type="checkbox" id={`sel-${l.id}`} checked={selected.has(l.id)} onChange={() => toggle(l.id)} aria-label={`Select ${l.address}`} />
-                  </td>
+                  {can.edit && (
+                    <td className="sel">
+                      <input type="checkbox" id={`sel-${l.id}`} checked={selected.has(l.id)} onChange={() => toggle(l.id)} aria-label={`Select ${l.address}`} />
+                    </td>
+                  )}
                   <td>{l.address}{l.is_example && <span className="tag">Example</span>}</td>
                   <td><Swatch material={l.material} /></td>
                   <td>{l.identification_method || "—"}{l.verified_by ? <small className="muted block">{l.verified_by}</small> : null}</td>
                   <td><AssignmentCell line={l} /></td>
-                  <td><span className="photo-cell"><PhotoGallery uris={photosOf(l)} title={`Photos · ${l.address}`} /><AddLinePhotos line={l} onSaved={loadLines} /></span></td>
-                  <td>{l.material === "unknown" ? <VerifyControls line={l} onSave={verifyLine} /> : <span className="muted">—</span>}</td>
+                  <td><span className="photo-cell"><PhotoGallery uris={photosOf(l)} title={`Photos · ${l.address}`} lineId={l.id} canRemove={can.admin} onChanged={loadLines} />{can.edit && <AddLinePhotos line={l} onSaved={loadLines} />}</span></td>
+                  <td>{l.material === "unknown" && can.edit ? <VerifyControls line={l} onSave={verifyLine} /> : <span className="muted">—</span>}</td>
                 </tr>
               ))}
               {lines && lines.length === 0 && (
-                <tr><td colSpan={7} className="muted">No individual lines on file yet. Add lines as you visit them in the field.</td></tr>
+                <tr><td colSpan={can.edit ? 7 : 6} className="muted">No individual lines on file yet. Add lines as you visit them in the field.</td></tr>
               )}
             </tbody>
           </table>
         </div>
       </section>
 
-      <div className="danger-zone">
+      {can.edit && <div className="danger-zone">
         {confirmDelete ? (
           <span className="inline-form">
             <span>Delete {system.name} and its {fmt(lines?.length || 0)} line records?</span>
@@ -369,7 +373,7 @@ export default function SystemDetail({ id }) {
         ) : (
           <button type="button" className="btn btn--sm btn--ghost" onClick={() => setConfirmDelete(true)}><Trash2 size={14} /> Delete system</button>
         )}
-      </div>
+      </div>}
 
       <Modal open={editing} title="Edit water system" onClose={() => setEditing(false)}>
         <SystemForm initial={system} submitLabel="Save changes" onSubmit={saveEdit} onCancel={() => setEditing(false)} />

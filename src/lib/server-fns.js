@@ -43,3 +43,13 @@ export const renameTeam = createServerFn({ method: "POST" })
   .middleware([requireUser])
   .validator(z.object({ name }))
   .handler(({ data, context }) => teams.rename(admin(context), context.user, data));
+
+export const setMemberPermissions = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object({ userId: z.string().min(1).max(100), read: z.boolean(), write: z.boolean(), edit: z.boolean() }))
+  .handler(({ data, context }) => teams.setPermissions(admin(context), context.user, data));
+
+export const removeLinePhoto = createServerFn({ method: "POST" })
+  .middleware([requireUser])
+  .validator(z.object({ lineId: z.string().min(1).max(100), uri: z.string().min(1).max(2000) }))
+  .handler(({ data, context }) => teams.removePhoto(admin(context), context.user, data));

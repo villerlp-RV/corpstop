@@ -15,25 +15,120 @@
     "name": {
       "type": "string",
       "title": "System Name",
-      "minLength": 1
+      "minLength": 1,
+      "rls": {
+        "update": {
+          "$or": [
+            {
+              "data.team_id": null
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            },
+            {
+              "user_condition": {
+                "data.perm_edit": true
+              }
+            }
+          ]
+        }
+      }
     },
     "state": {
       "type": "string",
       "title": "State",
-      "description": "Two-letter primacy state code, e.g. OH."
+      "description": "Two-letter primacy state code, e.g. OH.",
+      "rls": {
+        "update": {
+          "$or": [
+            {
+              "data.team_id": null
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            },
+            {
+              "user_condition": {
+                "data.perm_edit": true
+              }
+            }
+          ]
+        }
+      }
     },
     "pwsid": {
       "type": "string",
       "title": "PWS ID",
-      "description": "Public water system ID, e.g. OH2140117."
+      "description": "Public water system ID, e.g. OH2140117.",
+      "rls": {
+        "update": {
+          "$or": [
+            {
+              "data.team_id": null
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            },
+            {
+              "user_condition": {
+                "data.perm_edit": true
+              }
+            }
+          ]
+        }
+      }
     },
     "population": {
       "type": "number",
-      "title": "Population Served"
+      "title": "Population Served",
+      "rls": {
+        "update": {
+          "$or": [
+            {
+              "data.team_id": null
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            },
+            {
+              "user_condition": {
+                "data.perm_edit": true
+              }
+            }
+          ]
+        }
+      }
     },
     "field_tech": {
       "type": "string",
-      "title": "Field Tech / Contact"
+      "title": "Field Tech / Contact",
+      "rls": {
+        "update": {
+          "$or": [
+            {
+              "data.team_id": null
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            },
+            {
+              "user_condition": {
+                "data.perm_edit": true
+              }
+            }
+          ]
+        }
+      }
     },
     "lead_count": {
       "type": "number",
@@ -58,12 +153,50 @@
     "connectors_inventoried": {
       "type": "boolean",
       "title": "Lead Connectors Inventoried",
-      "default": false
+      "default": false,
+      "rls": {
+        "update": {
+          "$or": [
+            {
+              "data.team_id": null
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            },
+            {
+              "user_condition": {
+                "data.perm_edit": true
+              }
+            }
+          ]
+        }
+      }
     },
     "plan_drafted": {
       "type": "boolean",
       "title": "Replacement Plan Drafted",
-      "default": false
+      "default": false,
+      "rls": {
+        "update": {
+          "$or": [
+            {
+              "data.team_id": null
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            },
+            {
+              "user_condition": {
+                "data.perm_edit": true
+              }
+            }
+          ]
+        }
+      }
     },
     "last_notice_date": {
       "type": "string",
@@ -73,12 +206,50 @@
     "replacements_scheduled": {
       "type": "number",
       "title": "Replacements Scheduled (Year 1)",
-      "default": 0
+      "default": 0,
+      "rls": {
+        "update": {
+          "$or": [
+            {
+              "data.team_id": null
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            },
+            {
+              "user_condition": {
+                "data.perm_edit": true
+              }
+            }
+          ]
+        }
+      }
     },
     "is_example": {
       "type": "boolean",
       "title": "Example Data",
-      "default": false
+      "default": false,
+      "rls": {
+        "update": {
+          "$or": [
+            {
+              "data.team_id": null
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            },
+            {
+              "user_condition": {
+                "data.perm_edit": true
+              }
+            }
+          ]
+        }
+      }
     }
   },
   "required": [
@@ -86,25 +257,6 @@
     "state"
   ],
   "rls": {
-    "create": {
-      "$or": [
-        {
-          "$and": [
-            {
-              "data.team_id": "{{user.data.team_id}}"
-            },
-            {
-              "data.team_id": {
-                "$ne": null
-              }
-            }
-          ]
-        },
-        {
-          "data.team_id": null
-        }
-      ]
-    },
     "read": {
       "$or": [
         {
@@ -131,17 +283,82 @@
         }
       ]
     },
+    "create": {
+      "$or": [
+        {
+          "$and": [
+            {
+              "$and": [
+                {
+                  "data.team_id": "{{user.data.team_id}}"
+                },
+                {
+                  "data.team_id": {
+                    "$ne": null
+                  }
+                }
+              ]
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "data.team_role": "owner"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "data.perm_write": true
+                  }
+                },
+                {
+                  "user_condition": {
+                    "data.perm_edit": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "data.team_id": null
+        }
+      ]
+    },
     "update": {
       "$or": [
         {
           "$and": [
             {
-              "data.team_id": "{{user.data.team_id}}"
+              "$and": [
+                {
+                  "data.team_id": "{{user.data.team_id}}"
+                },
+                {
+                  "data.team_id": {
+                    "$ne": null
+                  }
+                }
+              ]
             },
             {
-              "data.team_id": {
-                "$ne": null
-              }
+              "$or": [
+                {
+                  "user_condition": {
+                    "data.team_role": "owner"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "data.perm_edit": true
+                  }
+                },
+                {
+                  "user_condition": {
+                    "data.perm_write": true
+                  }
+                }
+              ]
             }
           ]
         },
@@ -162,12 +379,30 @@
         {
           "$and": [
             {
-              "data.team_id": "{{user.data.team_id}}"
+              "$and": [
+                {
+                  "data.team_id": "{{user.data.team_id}}"
+                },
+                {
+                  "data.team_id": {
+                    "$ne": null
+                  }
+                }
+              ]
             },
             {
-              "data.team_id": {
-                "$ne": null
-              }
+              "$or": [
+                {
+                  "user_condition": {
+                    "data.team_role": "owner"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "data.perm_edit": true
+                  }
+                }
+              ]
             }
           ]
         },

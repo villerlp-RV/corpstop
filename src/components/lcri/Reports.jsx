@@ -19,7 +19,7 @@ function download(text, filename) {
 }
 
 export default function Reports() {
-  const { systems, loading } = useData();
+  const { systems, loading, can } = useData();
   const navigate = useNavigate();
   const list = systems || [];
   const states = [...new Set(list.map((s) => s.state))].sort();
@@ -65,12 +65,12 @@ export default function Reports() {
       <div className="card">
         <div className="card-h">
           <div><b>{state}</b> · {inState.length} systems · {ready} ready to file</div>
-          <div className="actions">
+          {can.read ? <div className="actions">
             <button type="button" className="btn" onClick={copy}><Copy size={15} /> Copy CSV</button>
             <button type="button" className="btn btn--primary" onClick={() => download(csv, `lcri-inventory-${state}-${todayIso()}.csv`)}>
               <Download size={15} /> Download CSV
             </button>
-          </div>
+          </div> : <span className="muted">Needs Read access to export</span>}
         </div>
         <div className="tbl-wrap">
           <table>

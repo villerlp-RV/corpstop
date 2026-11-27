@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { teamIdOf, teamRoleOf } from "@/lib/team";
+import { permissionsOf } from "@/lib/permissions";
 
 const DataContext = createContext(null);
 
@@ -21,6 +22,7 @@ export function DataProvider({ children }) {
   const { user } = useAuth();
   const teamId = teamIdOf(user);
   const teamRole = teamRoleOf(user);
+  const can = useMemo(() => permissionsOf(user), [user]);
   const [systems, setSystems] = useState(null);
   const [loadError, setLoadError] = useState(false);
   // Bumped whenever service lines change anywhere (this device or another), so
@@ -103,8 +105,8 @@ export function DataProvider({ children }) {
   );
 
   const value = useMemo(
-    () => ({ systems, loading: systems === null, loadError, reload, updateSystem, teamId, teamRole, lineVersion, live, bumpLines }),
-    [systems, loadError, reload, updateSystem, teamId, teamRole, lineVersion, live, bumpLines]
+    () => ({ systems, loading: systems === null, loadError, reload, updateSystem, teamId, teamRole, can, lineVersion, live, bumpLines }),
+    [systems, loadError, reload, updateSystem, teamId, teamRole, can, lineVersion, live, bumpLines]
   );
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

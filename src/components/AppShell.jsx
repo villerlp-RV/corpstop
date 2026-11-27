@@ -17,7 +17,8 @@ const NAV = [
 // App chrome for every signed-in page: brand, deadline countdown, account and section tabs.
 export default function AppShell({ children }) {
   const { user, logout } = useAuth();
-  const { loadError, reload } = useData();
+  const { loadError, reload, can } = useData();
+  const nav = can.admin ? [...NAV, { to: "/admin", label: "Admin" }] : NAV;
   const days = daysToDeadline();
   const { online, summary, syncing } = useOffline();
 
@@ -55,7 +56,7 @@ export default function AppShell({ children }) {
           </span>
         </div>
         <nav className="in tabs" aria-label="Sections">
-          {NAV.map((item) => (
+          {nav.map((item) => (
             <Link key={item.to} to={item.to} activeOptions={{ exact: !!item.exact }} activeProps={{ className: "active" }}>
               {item.label}
             </Link>

@@ -14,7 +14,7 @@ import {
 } from "@/lib/lcri";
 
 export default function Portfolio() {
-  const { systems, loading, reload, teamId } = useData();
+  const { systems, loading, reload, teamId, can } = useData();
   const navigate = useNavigate();
   const [filter, setFilter] = useState("all");
   const [adding, setAdding] = useState(false);
@@ -84,15 +84,17 @@ export default function Portfolio() {
           </h1>
         </div>
         <div className="actions">
-          {list.length > 0 && <ReportButton build={(profile, opts) => portfolioReport(list, profile, opts)} />}
-          {hasExamples && (
+          {list.length > 0 && can.read && <ReportButton build={(profile, opts) => portfolioReport(list, profile, opts)} />}
+          {hasExamples && can.edit && (
             <button type="button" className="btn" onClick={removeExamples} disabled={busy}>
               Remove example data
             </button>
           )}
-          <button type="button" className="btn btn--primary" onClick={() => setAdding(true)}>
-            <Plus size={16} /> Add system
-          </button>
+          {can.write && (
+            <button type="button" className="btn btn--primary" onClick={() => setAdding(true)}>
+              <Plus size={16} /> Add system
+            </button>
+          )}
         </div>
       </div>
 
@@ -103,14 +105,18 @@ export default function Portfolio() {
             Enter each system you operate with its service-line inventory totals. The console then tracks readiness for
             1 Nov 2027, year-one replacement targets, annual notices and state filings.
           </p>
-          <div className="actions actions--center">
-            <button type="button" className="btn btn--primary" onClick={() => setAdding(true)}>
-              <Plus size={16} /> Add system
-            </button>
-            <button type="button" className="btn" onClick={loadExamples} disabled={busy}>
-              {busy ? "Adding examples…" : "Load example data"}
-            </button>
-          </div>
+          {can.write ? (
+            <div className="actions actions--center">
+              <button type="button" className="btn btn--primary" onClick={() => setAdding(true)}>
+                <Plus size={16} /> Add system
+              </button>
+              <button type="button" className="btn" onClick={loadExamples} disabled={busy}>
+                {busy ? "Adding examples…" : "Load example data"}
+              </button>
+            </div>
+          ) : (
+            <p className="muted">Your team owner hasn&apos;t given you Write access, so you can&apos;t add systems.</p>
+          )}
         </div>
       ) : (
         <>
