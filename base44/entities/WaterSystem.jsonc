@@ -227,6 +227,31 @@
         }
       }
     },
+    "replacements_completed": {
+      "type": "number",
+      "title": "Replacements Completed",
+      "default": 0,
+      "description": "Lead and GRR service lines fully replaced since the compliance date (cumulative). Counts toward the 10% a year replacement rate.",
+      "rls": {
+        "update": {
+          "$or": [
+            {
+              "data.team_id": null
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            },
+            {
+              "user_condition": {
+                "data.perm_edit": true
+              }
+            }
+          ]
+        }
+      }
+    },
     "is_example": {
       "type": "boolean",
       "title": "Example Data",

@@ -19,7 +19,7 @@ function imageSize(dataUrl) {
 
 export async function renderReportPdf(report) {
   const { jsPDF } = await import("jspdf");
-  const landscape = report.kind === "portfolio";
+  const landscape = report.kind === "portfolio" || report.kind === "compliance";
   const doc = new jsPDF({ unit: "pt", format: "letter", orientation: landscape ? "landscape" : "portrait" });
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
@@ -319,6 +319,24 @@ export async function renderReportPdf(report) {
       y += body.length * 13 + 6;
     }
     y += 6;
+  } else if (report.kind === "compliance") {
+    for (const s of report.sections) {
+      heading(s.title);
+      if (s.table.rows.length) table(s.table);
+      else if (s.empty) {
+        font(9.5, "normal", MUTED);
+        ensure(16);
+        doc.text(s.empty, M, y);
+        y += 20;
+      }
+      if (s.note) {
+        font(9, "normal", MUTED);
+        const body = doc.splitTextToSize(s.note, CW);
+        ensure(body.length * 12 + 4);
+        doc.text(body, M, y);
+        y += body.length * 12 + 12;
+      }
+    }
   } else {
     heading("Systems");
     table(report.systems);
