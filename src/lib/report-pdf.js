@@ -66,6 +66,20 @@ export async function renderReportPdf(report) {
     }
   }
   const right = W - M;
+  // No company details yet: a compact LineTally letterhead instead of an empty band.
+  const hasCompany = !!(lh.logo || lh.name || lh.address.length || lh.contact);
+  if (!hasCompany) {
+    doc.setDrawColor(...WATER);
+    doc.setLineWidth(4);
+    doc.circle(M + 12, y + 13, 10, "S");
+    doc.setFillColor(180, 88, 43);
+    doc.circle(M + 12, y + 13, 4.5, "F");
+    font(17, "bold");
+    doc.text("LineTally", M + 32, y + 13);
+    font(8.5, "normal", MUTED);
+    doc.text("LCRI operator console", M + 32, y + 25);
+    logoBottom = y + 28;
+  }
   let ty = y + 4;
   if (lh.name) {
     font(14, "bold");
