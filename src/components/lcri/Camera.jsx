@@ -2,27 +2,50 @@ import { useEffect, useRef, useState } from "react";
 import { Camera as CameraIcon, ImagePlus, X } from "lucide-react";
 import { notify } from "@/components/lcri/notify";
 import { continuousFocus, tapFocus, tapToPicturePoint } from "@/lib/camera-focus";
+import { exifDate, stampLayout, stampLines } from "@/lib/photo-stamp";
 
 const MAX_EDGE = 1600; // px; keeps photos readable and uploads small on a weak signal
 const QUALITY = 0.82;
 const MAX_SOURCE_BYTES = 25 * 1024 * 1024;
 
-// Downscale any image (camera frame or picked file) to a JPEG Blob.
-async function toJpeg(source, width, height) {
+// Burn the timestamp band into the bottom of the photo.
+function drawStamp(ctx, w, h, lines) {
+  const { font, pad, lineH, band } = stampLayout(w, h, lines.length);
+  ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
+  ctx.fillRect(0, h - band, w, band);
+  ctx.fillStyle = "#fff";
+  ctx.textBaseline = "top";
+  lines.forEach((line, i) => {
+    ctx.font = `${i === 0 ? 700 : 500} ${font}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
+    ctx.fillText(line, pad, h - band + pad + i * lineH + Math.round((lineH - font) / 2), w - pad * 2);
+  });
+}
+
+// Downscale any image (camera frame or picked file) to a JPEG Blob, stamped
+// with `stampText` lines when given.
+async function toJpeg(source, width, height, stampText) {
   const scale = Math.min(1, MAX_EDGE / Math.max(width, height));
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(width * scale);
   canvas.height = Math.round(height * scale);
-  canvas.getContext("2d").drawImage(source, 0, 0, canvas.width, canvas.height);
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
+  if (stampText?.length) drawStamp(ctx, canvas.width, canvas.height, stampText);
   return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Couldn't process the photo"))), "image/jpeg", QUALITY));
 }
 
-async function fileToJpeg(file) {
+// A picked photo is stamped with when it was taken (EXIF), or else its file date.
+async function fileToJpeg(file, stamp) {
   if (file.size > MAX_SOURCE_BYTES) throw new Error("That photo is over 25 MB.");
   const bitmap = await createImageBitmap(file).catch(() => null);
   if (!bitmap) return file; // unknown format: keep the original
   try {
-    return await toJpeg(bitmap, bitmap.width, bitmap.height);
+    let text = null;
+    if (stamp) {
+      const taken = /jpe?g/i.test(file.type) ? exifDate(await file.slice(0, 256 * 1024).arrayBuffer()) : null;
+      text = stampLines({ ...stamp, takenAt: taken || new Date(file.lastModified || Date.now()), source: taken ? "exif" : "file" });
+    }
+    return await toJpeg(bitmap, bitmap.width, bitmap.height, text);
   } finally {
     bitmap.close?.();
   }
@@ -30,7 +53,7 @@ async function fileToJpeg(file) {
 
 // Full-screen live camera. Falls back to the phone's own camera app when the
 // browser can't open the camera here (no permission, no getUserMedia).
-function CameraSheet({ onShot, onClose, onFallback }) {
+function CameraSheet({ onShot, onClose, onFallback, stamp }) {
   const video = useRef(null);
   const track = useRef(null);
   const caps = useRef(null);
@@ -93,7 +116,7 @@ function CameraSheet({ onShot, onClose, onFallback }) {
     const v = video.current;
     if (!v?.videoWidth) return;
     try {
-      onShot(await toJpeg(v, v.videoWidth, v.videoHeight));
+      onShot(await toJpeg(v, v.videoWidth, v.videoHeight, stamp ? stampLines({ ...stamp, takenAt: new Date(), source: "camera" }) : null));
       setTaken((n) => n + 1);
     } catch {
       notify("Couldn't take the photo. Try again.", "error");
@@ -119,7 +142,8 @@ function CameraSheet({ onShot, onClose, onFallback }) {
 
 // Photo picker for one entry: take photos with the camera or choose from the
 // library; shows thumbnails that can be removed. `photos` is an array of Blobs.
-export function PhotoPicker({ photos, onChange, max = 5, idPrefix }) {
+// `stamp` ({ address, systemName, by }) burns a timestamp into every photo.
+export function PhotoPicker({ photos, onChange, max = 5, idPrefix, stamp }) {
   const [cameraOpen, setCameraOpen] = useState(false);
   const fallbackInput = useRef(null);
   const libraryInput = useRef(null);
@@ -144,7 +168,7 @@ export function PhotoPicker({ photos, onChange, max = 5, idPrefix }) {
     const out = [];
     for (const f of files) {
       try {
-        out.push(await fileToJpeg(f));
+        out.push(await fileToJpeg(f, stamp));
       } catch (err) {
         notify(err.message || "Couldn't use that photo.", "error");
       }
@@ -180,6 +204,7 @@ export function PhotoPicker({ photos, onChange, max = 5, idPrefix }) {
       {cameraOpen && (
         <CameraSheet
           onShot={(b) => add([b])}
+          stamp={stamp}
           onClose={() => setCameraOpen(false)}
           onFallback={() => {
             setCameraOpen(false);
