@@ -7,6 +7,8 @@ import { linesFor, useData } from "@/lib/DataContext";
 import { notify } from "@/components/lcri/notify";
 import { MaterialBar, Modal, ReadinessPill, Swatch } from "@/components/lcri/bits";
 import SystemForm from "@/components/lcri/SystemForm";
+import ReportButton from "@/components/lcri/ReportButton";
+import { systemReport } from "@/lib/report";
 import { AddLinePhotos, AssignmentCell, PhotoGallery } from "@/components/lcri/field-bits";
 import { useMembers } from "@/components/lcri/useMembers";
 import { assignPatch, photosOf, unassignPatch } from "@/lib/fieldwork";
@@ -230,6 +232,7 @@ export default function SystemDetail({ id }) {
         </div>
         <div className="actions">
           <ReadinessPill status={readiness(system)} />
+          <ReportButton build={(profile, opts) => systemReport(system, lines || [], profile, opts)} disabled={lines === null} />
           <button type="button" className="btn" onClick={() => setEditing(true)}><Pencil size={15} /> Edit</button>
         </div>
       </div>

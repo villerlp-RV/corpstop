@@ -6,6 +6,8 @@ import { unwrap, useData } from "@/lib/DataContext";
 import { notify } from "@/components/lcri/notify";
 import { Kpi, Legend, MaterialBar, Modal, ReadinessPill } from "@/components/lcri/bits";
 import SystemForm from "@/components/lcri/SystemForm";
+import ReportButton from "@/components/lcri/ReportButton";
+import { portfolioReport } from "@/lib/report";
 import {
   EXAMPLE_SYSTEMS, exampleLines, fmt, formatDate, needsAttention, noticeCurrent,
   portfolioSummary, readiness, totalLines, unknownShare, yearOneTarget,
@@ -82,6 +84,7 @@ export default function Portfolio() {
           </h1>
         </div>
         <div className="actions">
+          {list.length > 0 && <ReportButton build={(profile, opts) => portfolioReport(list, profile, opts)} />}
           {hasExamples && (
             <button type="button" className="btn" onClick={removeExamples} disabled={busy}>
               Remove example data

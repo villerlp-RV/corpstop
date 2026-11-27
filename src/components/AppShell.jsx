@@ -11,6 +11,7 @@ const NAV = [
   { to: "/notices", label: "Annual notices" },
   { to: "/reports", label: "State reports" },
   { to: "/team", label: "Team" },
+  { to: "/company", label: "Company" },
 ];
 
 // App chrome for every signed-in page: brand, deadline countdown, account and section tabs.

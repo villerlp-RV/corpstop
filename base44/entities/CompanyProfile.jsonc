@@ -1,0 +1,189 @@
+{
+  "name": "CompanyProfile",
+  "type": "object",
+  "description": "The business shown on reports: name, address, contact details and logo. One per team (or per personal account). Team members read it; only the team owner edits it.",
+  "properties": {
+    "team_id": {
+      "type": "string",
+      "title": "Team ID",
+      "description": "Team this profile belongs to; null for a personal account.",
+      "rls": {
+        "create": true,
+        "update": false
+      }
+    },
+    "business_name": {
+      "type": "string",
+      "title": "Business Name",
+      "maxLength": 120
+    },
+    "address_line1": {
+      "type": "string",
+      "title": "Address Line 1",
+      "maxLength": 120
+    },
+    "address_line2": {
+      "type": "string",
+      "title": "Address Line 2",
+      "maxLength": 120
+    },
+    "city": {
+      "type": "string",
+      "title": "City",
+      "maxLength": 80
+    },
+    "state": {
+      "type": "string",
+      "title": "State",
+      "maxLength": 40
+    },
+    "postal_code": {
+      "type": "string",
+      "title": "ZIP / Postal Code",
+      "maxLength": 20
+    },
+    "phone": {
+      "type": "string",
+      "title": "Phone",
+      "maxLength": 40
+    },
+    "email": {
+      "type": "string",
+      "title": "Email",
+      "maxLength": 120
+    },
+    "website": {
+      "type": "string",
+      "title": "Website",
+      "maxLength": 120
+    },
+    "license_number": {
+      "type": "string",
+      "title": "Operator License / Certification",
+      "maxLength": 80,
+      "description": "Shown on reports, e.g. a state operator certification number."
+    },
+    "logo_data": {
+      "type": "string",
+      "title": "Logo",
+      "description": "Small PNG data URL (resized in the browser), embedded directly in PDF reports."
+    }
+  },
+  "required": [
+    "business_name"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "$and": [
+            {
+              "data.team_id": "{{user.data.team_id}}"
+            },
+            {
+              "data.team_id": {
+                "$ne": null
+              }
+            }
+          ]
+        },
+        {
+          "$and": [
+            {
+              "created_by_id": "{{user.id}}"
+            },
+            {
+              "data.team_id": null
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "$and": [
+            {
+              "data.team_id": "{{user.data.team_id}}"
+            },
+            {
+              "data.team_id": {
+                "$ne": null
+              }
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            }
+          ]
+        },
+        {
+          "data.team_id": null
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "$and": [
+            {
+              "data.team_id": "{{user.data.team_id}}"
+            },
+            {
+              "data.team_id": {
+                "$ne": null
+              }
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            }
+          ]
+        },
+        {
+          "$and": [
+            {
+              "created_by_id": "{{user.id}}"
+            },
+            {
+              "data.team_id": null
+            }
+          ]
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "$and": [
+            {
+              "data.team_id": "{{user.data.team_id}}"
+            },
+            {
+              "data.team_id": {
+                "$ne": null
+              }
+            },
+            {
+              "user_condition": {
+                "data.team_role": "owner"
+              }
+            }
+          ]
+        },
+        {
+          "$and": [
+            {
+              "created_by_id": "{{user.id}}"
+            },
+            {
+              "data.team_id": null
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

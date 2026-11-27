@@ -9,6 +9,7 @@ A console for contract water operators who run many small community water system
 | `/notices` | Pick systems, preview the annual notice letter, queue a batch for print and mail. |
 | `/reports` | Systems grouped by state, with a CSV of inventory totals to copy or download. |
 | `/field` | Field work. *Mine*: a phone-first list of the lines assigned to me; record material, method, notes and a photo. *Everyone*: open work per person and the latest results. |
+| `/company` | Business name, address, contact details, license number and logo shown on PDF reports. The team owner edits; members see it read-only. |
 | `/team` | Create a team or join one with an invite code; the owner sees the code, renames the team and removes members. |
 
 All pages sit under `src/routes/_authed/` (sign-in required). Page components are in `src/components/lcri/`, styles in `src/lcri.css` (scoped under `.lcri-app`).
@@ -33,6 +34,12 @@ Identifying an unknown line moves one count on its `WaterSystem` to the material
 - Refusals that retrying won't fix (line deleted, no permission) are marked on the visit, which the tech can retry or discard. Photo upload progress is saved, so a dropped connection doesn't upload a photo twice.
 - The tech's assignments are kept on the phone, so the list still shows with no signal. The app must have been opened with signal at least once; it does not yet install as an offline app (no service worker).
 - Photos: an in-app camera (live viewfinder, falls back to the phone's camera app) or the photo library, up to 5 per entry, downscaled to 1600 px JPEG. Any service line can get photos from the system page too. All photos are private files in `ServiceLine.photo_uris`, viewed through 10-minute signed links.
+
+### PDF reports
+
+- **Generate report** on a system page downloads a branded compliance report: letterhead (logo, address, contact, license), readiness status and checklist, inventory, replacement pace, every service line on file with its field visit, and field notes. On the Portfolio it downloads a summary of all systems (landscape).
+- Report content is built by pure functions in `src/lib/report.js` (unit-tested) and drawn with jsPDF in `src/lib/report-pdf.js`, which loads only when a report is generated.
+- Company details live in the `CompanyProfile` entity: one per team (or per personal account). Row-level security lets team members read it and only the team owner create or change it. The logo is resized in the browser and stored as a small data URL, so it embeds in PDFs without a network fetch.
 
 ### Teams
 
