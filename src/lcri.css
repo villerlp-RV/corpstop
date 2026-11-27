@@ -334,3 +334,8 @@
 .lcri-app .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .lcri-app .two .span2 { grid-column: 1 / -1; margin: 0; }
 @media (max-width: 520px) { .lcri-app .seg, .lcri-app .two { grid-template-columns: 1fr; } }
+
+/* Timestamp details under the camera viewfinder (printed below each photo) */
+.lcri-app .camera-stamp { display: flex; flex-direction: column; gap: 1px; padding: 8px max(16px, env(safe-area-inset-left, 0px)); background: #14191d; color: #fff; font-size: .82rem; line-height: 1.3; border-top: 1px solid rgb(255 255 255 / .12); }
+.lcri-app .camera-stamp b { font-size: .9rem; }
+.lcri-app .camera-stamp span { color: rgb(255 255 255 / .8); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
