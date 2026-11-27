@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { exifDate, formatStampTime, parseExifTime, stampLayout, stampLines } from "../src/lib/photo-stamp.js";
+import { exifDate, exifInfo, formatCoords, formatStampTime, parseExifTime, stampLayout, stampLines } from "../src/lib/photo-stamp.js";
 
 const AT = new Date("2026-11-27T20:14:00Z");
 
@@ -39,4 +39,37 @@ test("reads when a photo was taken from its EXIF", () => {
   assert.equal(exifDate(new Uint8Array([0x89, 0x50, 0x4e, 0x47]).buffer), null);
   assert.equal(exifDate(new Uint8Array([0xff, 0xd8, 0xff, 0xda, 0, 2]).buffer), null);
   assert.equal(parseExifTime("0000:00:00 00:00:00"), null);
+});
+
+test("coordinates are printed with hemisphere and accuracy", () => {
+  assert.equal(formatCoords({ lat: 29.760427, lng: -95.369803, accuracy: 7.6 }), "29.76043° N, 95.36980° W ±8 m");
+  assert.equal(formatCoords({ lat: -33.8688, lng: 151.2093 }), "33.86880° S, 151.20930° E");
+  assert.equal(formatCoords(null), "");
+  const lines = stampLines({ takenAt: AT, address: "1 A St", by: "Jo", timeZone: "UTC", gps: { lat: 29.760427, lng: -95.369803, accuracy: 0.4 } });
+  assert.deepEqual(lines, ["Nov 27, 2026, 8:14 PM UTC", "1 A St", "29.76043° N, 95.36980° W ±1 m", "LineTally · Jo"]);
+});
+
+// JPEG whose IFD0 points at a GPS IFD: 29° 45' 37.5372" N, 95° 22' 11.2908" W.
+function jpegWithGps() {
+  const tiff = [];
+  const w16 = (n) => tiff.push(n & 255, n >> 8);
+  const w32 = (n) => tiff.push(n & 255, (n >> 8) & 255, (n >> 16) & 255, n >>> 24);
+  tiff.push(0x49, 0x49); w16(42); w32(8);
+  w16(1); w16(0x8825); w16(4); w32(1); w32(26); w32(0); // IFD0 -> GPS IFD at 26
+  w16(4); // GPS IFD with 4 entries, rationals after it at 26 + 2 + 48 + 4 = 80
+  w16(1); w16(2); w32(2); tiff.push(78, 0, 0, 0); // LatitudeRef "N"
+  w16(2); w16(5); w32(3); w32(80);
+  w16(3); w16(2); w32(2); tiff.push(87, 0, 0, 0); // LongitudeRef "W"
+  w16(4); w16(5); w32(3); w32(104);
+  w32(0);
+  for (const [n, d] of [[29, 1], [45, 1], [375372, 10000], [95, 1], [22, 1], [112908, 10000]]) { w32(n); w32(d); }
+  const app1 = [0x45, 0x78, 0x69, 0x66, 0, 0, ...tiff];
+  return new Uint8Array([0xff, 0xd8, 0xff, 0xe1, (app1.length + 2) >> 8, (app1.length + 2) & 255, ...app1, 0xff, 0xd9]).buffer;
+}
+
+test("reads GPS from a photo's EXIF", () => {
+  const { gps, date } = exifInfo(jpegWithGps());
+  assert.equal(date, null);
+  assert.equal(formatCoords(gps), "29.76043° N, 95.36980° W");
+  assert.deepEqual(exifInfo(jpegWithExif("2026:11:20 09:05:30")).gps, null);
 });

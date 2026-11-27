@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Camera as CameraIcon, ImagePlus, X } from "lucide-react";
 import { notify } from "@/components/lcri/notify";
 import { continuousFocus, tapFocus, tapToPicturePoint } from "@/lib/camera-focus";
-import { exifDate, stampLayout, stampLines } from "@/lib/photo-stamp";
+import { exifInfo, formatCoords, stampLayout, stampLines } from "@/lib/photo-stamp";
 
 const MAX_EDGE = 1600; // px; keeps photos readable and uploads small on a weak signal
 const QUALITY = 0.82;
@@ -38,16 +38,47 @@ async function toJpeg(source, width, height, stampText) {
   return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Couldn't process the photo"))), "image/jpeg", QUALITY));
 }
 
-// A picked photo is stamped with when it was taken (EXIF), or else its file date.
-async function fileToJpeg(file, stamp) {
+// The phone's position, as { lat, lng, accuracy } or null.
+const toGps = (pos) => (pos?.coords ? { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy } : null);
+
+function positionOnce() {
+  if (typeof navigator === "undefined" || !navigator.geolocation) return Promise.resolve(null);
+  return new Promise((resolve) =>
+    navigator.geolocation.getCurrentPosition((p) => resolve(toGps(p)), () => resolve(null), { enableHighAccuracy: true, maximumAge: 60000, timeout: 8000 })
+  );
+}
+
+// Watches the position while the camera is open. status: locating | ok | off.
+function useLiveLocation() {
+  const [state, setState] = useState({ status: "locating", gps: null });
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setState({ status: "off", gps: null });
+      return undefined;
+    }
+    const id = navigator.geolocation.watchPosition(
+      (p) => setState({ status: "ok", gps: toGps(p) }),
+      () => setState((s) => (s.gps ? s : { status: "off", gps: null })),
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
+    );
+    return () => navigator.geolocation.clearWatch(id);
+  }, []);
+  return state;
+}
+
+// A picked photo is stamped with when and where it was taken (EXIF). Without an
+// EXIF date the file date is used, labelled. Without EXIF GPS, only a photo
+// just taken with the phone's camera app (liveGps) gets the current position.
+async function fileToJpeg(file, stamp, liveGps = null) {
   if (file.size > MAX_SOURCE_BYTES) throw new Error("That photo is over 25 MB.");
   const bitmap = await createImageBitmap(file).catch(() => null);
   if (!bitmap) return file; // unknown format: keep the original
   try {
     let text = null;
     if (stamp) {
-      const taken = /jpe?g/i.test(file.type) ? exifDate(await file.slice(0, 256 * 1024).arrayBuffer()) : null;
-      text = stampLines({ ...stamp, takenAt: taken || new Date(file.lastModified || Date.now()), source: taken ? "exif" : "file" });
+      const info = /jpe?g/i.test(file.type) ? exifInfo(await file.slice(0, 256 * 1024).arrayBuffer()) : { date: null, gps: null };
+      const taken = info.date;
+      text = stampLines({ ...stamp, takenAt: taken || new Date(file.lastModified || Date.now()), source: taken ? "exif" : "file", gps: info.gps || liveGps });
     }
     return await toJpeg(bitmap, bitmap.width, bitmap.height, text);
   } finally {
@@ -57,13 +88,14 @@ async function fileToJpeg(file, stamp) {
 
 // What will be printed under the photo, shown under the viewfinder (not over
 // it) so the tech knows it's recorded without anything covering the shot.
-function StampPreview({ stamp }) {
+function StampPreview({ stamp, location }) {
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 15000);
     return () => clearInterval(id);
   }, []);
-  const [when, ...rest] = stampLines({ ...stamp, takenAt: now, source: "camera" });
+  const [when, ...rest] = stampLines({ ...stamp, takenAt: now, source: "camera", gps: location.gps });
+  if (!location.gps) rest.splice(rest.length - 1, 0, location.status === "off" ? "GPS off · allow location to add coordinates" : "Finding GPS location…");
   return (
     <div className="camera-stamp" aria-label="Printed below each photo">
       <b>{when}</b>
@@ -79,6 +111,9 @@ function CameraSheet({ onShot, onClose, onFallback, stamp }) {
   const track = useRef(null);
   const caps = useRef(null);
   const [ready, setReady] = useState(false);
+  const location = useLiveLocation();
+  const gpsRef = useRef(null);
+  gpsRef.current = location.gps;
   const [ring, setRing] = useState(null); // { left, top, key } where the tech tapped
   const refocusTimer = useRef(null);
   const [taken, setTaken] = useState(0);
@@ -137,7 +172,7 @@ function CameraSheet({ onShot, onClose, onFallback, stamp }) {
     const v = video.current;
     if (!v?.videoWidth) return;
     try {
-      onShot(await toJpeg(v, v.videoWidth, v.videoHeight, stamp ? stampLines({ ...stamp, takenAt: new Date(), source: "camera" }) : null));
+      onShot(await toJpeg(v, v.videoWidth, v.videoHeight, stamp ? stampLines({ ...stamp, takenAt: new Date(), source: "camera", gps: gpsRef.current }) : null));
       setTaken((n) => n + 1);
     } catch {
       notify("Couldn't take the photo. Try again.", "error");
@@ -152,7 +187,7 @@ function CameraSheet({ onShot, onClose, onFallback, stamp }) {
         {ready && <p className="camera-hint">Tap to focus</p>}
       </div>
       {!ready && <p className="camera-wait">Opening camera…</p>}
-      {stamp && <StampPreview stamp={stamp} />}
+      {stamp && <StampPreview stamp={stamp} location={location} />}
       <div className="camera-bar">
         <button type="button" className="camera-btn" onClick={onClose} aria-label="Close camera"><X size={26} /></button>
         <button type="button" className="shutter" onClick={shoot} disabled={!ready} aria-label="Take photo" />
@@ -184,13 +219,15 @@ export function PhotoPicker({ photos, onChange, max = 5, idPrefix, stamp }) {
     if (accepted.length) onChange([...photos, ...accepted]);
   };
 
-  const addFiles = async (e) => {
+  // justTaken: from the phone's own camera app, so the current position applies.
+  const addFiles = async (e, justTaken = false) => {
     const files = [...(e.target.files || [])];
     e.target.value = "";
     const out = [];
+    const liveGps = justTaken && stamp && files.length ? await positionOnce() : null;
     for (const f of files) {
       try {
-        out.push(await fileToJpeg(f, stamp));
+        out.push(await fileToJpeg(f, stamp, liveGps));
       } catch (err) {
         notify(err.message || "Couldn't use that photo.", "error");
       }
@@ -221,7 +258,7 @@ export function PhotoPicker({ photos, onChange, max = 5, idPrefix, stamp }) {
         </button>
         <span className="muted photo-count">{photos.length}/{max}</span>
       </div>
-      <input ref={fallbackInput} id={`${idPrefix}-capture`} type="file" accept="image/*" capture="environment" onChange={addFiles} hidden />
+      <input ref={fallbackInput} id={`${idPrefix}-capture`} type="file" accept="image/*" capture="environment" onChange={(e) => addFiles(e, true)} hidden />
       <input ref={libraryInput} id={`${idPrefix}-library`} type="file" accept="image/*" multiple onChange={addFiles} hidden />
       {cameraOpen && (
         <CameraSheet
