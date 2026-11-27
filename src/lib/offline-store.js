@@ -3,6 +3,8 @@
 // survives the app being closed. Falls back to memory if IndexedDB is blocked
 // (private browsing), so the app still works, just without surviving a reload.
 
+// Kept from the app's earlier name: renaming it would strand visits still
+// waiting to upload on phones that already use it.
 const DB_NAME = "corpstop-offline";
 const QUEUE = "queue";
 const CACHE = "cache";
